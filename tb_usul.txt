@@ -1,0 +1,2 @@
+"id_usulan"	"nip"	"nama"	"jabatan"	"unor_lama"	"unor_baru"	"mk_tahun"	"mk_bulan"	"status_usul"	"created_at"	"updated_at"	"deleted_at"	"no_wa"	"email"
+"123"	"123"	"123"	"123"	"123"	"123"	"123"	"12"	"12"					
