@@ -14,7 +14,7 @@
 
     <title>e-Mut Kabupaten Pekalongan</title>
 
-    <link href="assets/css/app.css" rel="stylesheet">
+    <link href="{{asset('assets/css/app.css')}}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
@@ -38,14 +38,14 @@
                         Mutasiku
                     </li>                    
 
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
+                    <li class="sidebar-item {{ request()->is('pns') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('pns.index') }}">
                             <i class="align-middle fa fa-square-plus"></i> <span class="align-middle">Pengajuan Baru</span>
                         </a>
                     </li>
 
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-sign-in.html">
+                    <li class="sidebar-item {{ request()->is('pns/tracking') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('pns.tracking') }}">
                             <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Pengajuan</span>
                         </a>
                     </li>
@@ -55,13 +55,13 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
+                        <a class="sidebar-link" href="{{ route('opd.index') }}">
                             <i class="align-middle fa fa-square-plus"></i> <span class="align-middle">Pengajuan Baru</span>
                         </a>
                     </li>
 
                     <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-sign-in.html">
+                        <a class="sidebar-link" href="{{ route('pns.tracking') }}">
                             <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Pengajuan</span>
                         </a>
                     </li>
@@ -71,12 +71,12 @@
                     </li>
 
                     <li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="{{ route('admin.index') }}">
 							<i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Mutasi</span>
 						</a>
 					</li>
 					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
+						<a class="sidebar-link" href="{{ route('admin.index') }}">
 							<i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Diproses</span>
 						</a>
 					</li>
