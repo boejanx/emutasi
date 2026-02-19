@@ -4,8 +4,67 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "07054ce887608878632b5b8b8a383c55",
+    "content-hash": "d38c443890122a58b96449d4fad5594a",
     "packages": [
+        {
+            "name": "black-coffee04/ws-siasn-php",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/black-coffee04/ws-siasn-php.git",
+                "reference": "eeab8fb299acf9c29319a5c080d34a090fcee646"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/black-coffee04/ws-siasn-php/zipball/eeab8fb299acf9c29319a5c080d34a090fcee646",
+                "reference": "eeab8fb299acf9c29319a5c080d34a090fcee646",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^7.8",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.6"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SiASN\\Sdk\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "black-coffee04",
+                    "email": "bkdegy@gmail.com"
+                }
+            ],
+            "description": "Software Development Kit Web Service SiASN",
+            "keywords": [
+                "sdk",
+                "siasn",
+                "siasn bkn",
+                "web service siasn",
+                "ws siasn",
+                "ws siasn php"
+            ],
+            "support": {
+                "issues": "https://github.com/black-coffee04/ws-siasn-php/issues",
+                "source": "https://github.com/black-coffee04/ws-siasn-php/tree/2.0.1"
+            },
+            "time": "2025-02-14T03:36:17+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.14.0",

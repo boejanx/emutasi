@@ -2,9 +2,12 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
+use App\Services\SsoService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -27,13 +30,29 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
 
     /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'email' => 'NIP',
+        ];
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
+     *
+     * Flow:
+     * 1. Check if user exists in local users table → attempt login locally
+     * 2. If not found locally → authenticate via Polakesatu SSO
+     * 3. If SSO succeeds → create/update user in local DB and log in
+     * 4. If both fail → throw validation error
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -41,15 +60,42 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $nip = $this->input('email');
+        $password = $this->input('password');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        // Step 1: Try to authenticate against local database first
+        if (Auth::attempt(['email' => $nip, 'password' => $password], $this->boolean('remember'))) {
+            RateLimiter::clear($this->throttleKey());
+            return;
         }
 
-        RateLimiter::clear($this->throttleKey());
+        // Step 2: User not found or password mismatch → try SSO
+        $ssoService = app(SsoService::class);
+        $ssoResponse = $ssoService->authenticate($nip, $password);
+
+        if ($ssoResponse) {
+            // SSO succeeded → create or update user in local database
+            $user = User::updateOrCreate(
+                ['email' => $nip],
+                [
+                    'name' => $ssoResponse['data']['nama'] ?? $ssoResponse['nama'] ?? $nip,
+                    'password' => Hash::make($password),
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            // Log the user in
+            Auth::login($user, $this->boolean('remember'));
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        // Both local and SSO failed
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => 'NIP atau Password salah.',
+        ]);
     }
 
     /**

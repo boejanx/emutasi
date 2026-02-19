@@ -23,7 +23,7 @@
                                     @endif
                                     <div class="mb-3">
                                         <label class="form-label" for="email">Username/NIP</label>
-                                        <input class="form-control" id="email" name="email" type="email">
+                                        <input class="form-control" id="email" name="email" type="text" value="{{ old('email') }}" placeholder="Masukkan NIP">
                                     </div>
                                     <div class="mb-4">
                                         <label class="form-label" for="password">Password</label>

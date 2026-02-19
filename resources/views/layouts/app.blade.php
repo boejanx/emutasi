@@ -28,15 +28,20 @@
                 </a>
 
                 <ul class="sidebar-nav">
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="index.html">
+                    {{-- Dashboard - visible to all roles --}}
+                    <li class="sidebar-item {{ request()->is('dashboard') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('dashboard') }}">
                             <i class="align-middle fa fa-home"></i> <span class="align-middle">Dashboard</span>
                         </a>
                     </li>
 
-					<li class="sidebar-header">
+                    {{-- ============================================= --}}
+                    {{-- Mutasiku - Role 3 (User Biasa) only --}}
+                    {{-- ============================================= --}}
+                    @if(Auth::user()->role == 3)
+                    <li class="sidebar-header">
                         Mutasiku
-                    </li>                    
+                    </li>
 
                     <li class="sidebar-item {{ request()->is('pns') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('pns.index') }}">
@@ -49,62 +54,73 @@
                             <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Pengajuan</span>
                         </a>
                     </li>
+                    @endif
 
+                    {{-- ============================================= --}}
+                    {{-- Mutasi - Role 2 (Admin Instansi) only --}}
+                    {{-- ============================================= --}}
+                    @if(Auth::user()->role == 2)
                     <li class="sidebar-header">
                         Mutasi
                     </li>
 
-                    <li class="sidebar-item">
+                    <li class="sidebar-item {{ request()->is('opd*') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('opd.index') }}">
                             <i class="align-middle fa fa-square-plus"></i> <span class="align-middle">Pengajuan Baru</span>
                         </a>
                     </li>
 
-                    <li class="sidebar-item">
+                    <li class="sidebar-item {{ request()->is('opd/tracking*') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('pns.tracking') }}">
                             <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Pengajuan</span>
                         </a>
                     </li>
+                    @endif
 
+                    {{-- ============================================= --}}
+                    {{-- MUTASI + PENGATURAN - Role 1 (Admin) only --}}
+                    {{-- ============================================= --}}
+                    @if(Auth::user()->role == 1)
                     <li class="sidebar-header">
                         MUTASI
                     </li>
 
+                    <li class="sidebar-item {{ request()->is('admin') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.index') }}">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Mutasi</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item">
-						<a class="sidebar-link" href="{{ route('admin.index') }}">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Mutasi</span>
-						</a>
-					</li>
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="{{ route('admin.index') }}">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Diproses</span>
-						</a>
-					</li>
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Selesai</span>
-						</a>
-					</li>
+                        <a class="sidebar-link" href="{{ route('admin.index') }}">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Diproses</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="pages-profile.html">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Selesai</span>
+                        </a>
+                    </li>
 
-					<li class="sidebar-header">
+                    <li class="sidebar-header">
                         PENGATURAN
                     </li>
 
                     <li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Akun Pengguna</span>
-						</a>
-					</li>
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Persyaratan</span>
-						</a>
-					</li>
-					<li class="sidebar-item">
-						<a class="sidebar-link" href="pages-profile.html">
-							<i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Unduhan</span>
-						</a>
-					</li>
+                        <a class="sidebar-link" href="pages-profile.html">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Akun Pengguna</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="pages-profile.html">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Persyaratan</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="pages-profile.html">
+                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Unduhan</span>
+                        </a>
+                    </li>
+                    @endif
                 </ul>
             </div>
         </nav>

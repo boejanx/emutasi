@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'polakesatu_sso' => [
+        'url' => env('POLAKESATU_SSO', 'https://polakesatu.pekalongankab.go.id/api/v23/login'),
+    ],
+
 ];
