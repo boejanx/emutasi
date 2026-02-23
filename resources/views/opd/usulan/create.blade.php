@@ -248,10 +248,20 @@
                     
                     required.forEach(input => {
                         if (input.value.trim() === '') {
-                            input.classList.add('is-invalid');
+                            if (input.type === 'hidden' && input.id.startsWith('hidden_dokumen_')) {
+                                const fileInput = input.parentElement.querySelector('.doc-upload');
+                                if (fileInput) fileInput.classList.add('is-invalid');
+                            } else {
+                                input.classList.add('is-invalid');
+                            }
                             valid = false;
                         } else {
-                            input.classList.remove('is-invalid');
+                            if (input.type === 'hidden' && input.id.startsWith('hidden_dokumen_')) {
+                                const fileInput = input.parentElement.querySelector('.doc-upload');
+                                if (fileInput) fileInput.classList.remove('is-invalid');
+                            } else {
+                                input.classList.remove('is-invalid');
+                            }
                         }
                     });
 
@@ -314,8 +324,10 @@
                         html += `
                             <div class="col-md-6 doc-row">
                                 <label class="fw-bold mb-2">${doc.nama_dokumen} <span class="text-danger">*</span></label>
-                                <input type="file" class="form-control" name="file_dokumen_${idx}_${doc.id_dokumen}" accept="application/pdf" required>
+                                <input type="file" class="form-control doc-upload" accept="application/pdf" data-idx="${idx}" data-docid="${doc.id_dokumen}">
+                                <input type="hidden" name="file_dokumen_temp_${idx}_${doc.id_dokumen}" id="hidden_dokumen_${idx}_${doc.id_dokumen}" required>
                                 <small class="text-muted d-block mt-1">Format: PDF (Max. 2MB)</small>
+                                <span id="status_dokumen_${idx}_${doc.id_dokumen}" class="upload-status d-block mt-1"></span>
                             </div>
                         `;
                     });
@@ -453,6 +465,61 @@
                             btnCari.disabled = false;
                             loadingText.classList.add('d-none');
                         });
+                }
+            });
+
+            // AJAX File Upload Registration
+            document.addEventListener('change', function(e) {
+                if(e.target.classList.contains('doc-upload')) {
+                    const input = e.target;
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const idx = input.getAttribute('data-idx');
+                    const docId = input.getAttribute('data-docid');
+                    const statusText = document.getElementById('status_dokumen_' + idx + '_' + docId);
+                    const hiddenInput = document.getElementById('hidden_dokumen_' + idx + '_' + docId);
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        Swal.fire('Oops', 'Ukuran file maksimal 2MB', 'warning');
+                        input.value = '';
+                        return;
+                    }
+
+                    statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Mengunggah...';
+                    statusText.className = 'upload-status text-warning mt-1 d-block small';
+                    input.disabled = true;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    fetch('{{ route("opd.usulan.uploadTemp") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        input.disabled = false;
+                        if (res.status === 'success') {
+                            hiddenInput.value = res.path;
+                            statusText.innerHTML = '<i class="fa fa-check text-success"></i> Berhasil diunggah';
+                            statusText.className = 'upload-status text-success mt-1 d-block small';
+                            hiddenInput.classList.remove('is-invalid');
+                            input.classList.remove('is-invalid');
+                        } else {
+                            statusText.innerHTML = '<i class="fa fa-times text-danger"></i> Gagal: ' + (res.message || 'Error');
+                            statusText.className = 'upload-status text-danger mt-1 d-block small';
+                            input.value = '';
+                        }
+                    })
+                    .catch(err => {
+                        input.disabled = false;
+                        statusText.innerHTML = '<i class="fa fa-times text-danger"></i> Terjadi kesalahan jaringan';
+                        statusText.className = 'upload-status text-danger mt-1 d-block small';
+                        input.value = '';
+                        console.error(err);
+                    });
                 }
             });
 

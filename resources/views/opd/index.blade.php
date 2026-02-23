@@ -123,6 +123,8 @@
                                     <td>
                                         @if($lus->status == 5)
                                             <span class="badge bg-success">Selesai</span>
+                                        @elseif($lus->status == 98)
+                                            <span class="badge bg-danger">Ditolak Permanen</span>
                                         @elseif($lus->status == 99)
                                             <span class="badge bg-danger">Ditolak</span>
                                         @elseif($lus->status == 4)

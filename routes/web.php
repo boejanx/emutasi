@@ -108,6 +108,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:2')->group(function () {
         Route::get('/opd', [\App\Http\Controllers\OpdController::class, 'index'])->name('opd.index');
         Route::get('/opd/usulan/create', [\App\Http\Controllers\OpdController::class, 'create'])->name('opd.usulan.create');
+        Route::post('/opd/usulan/upload-temp', [\App\Http\Controllers\OpdController::class, 'uploadTemp'])->name('opd.usulan.uploadTemp');
         Route::post('/opd/usulan', [\App\Http\Controllers\OpdController::class, 'store'])->name('opd.usulan.store');
         Route::get('/opd/riwayat', [\App\Http\Controllers\OpdController::class, 'riwayat'])->name('opd.riwayat');
         Route::get('/opd/tracking/{id}', [\App\Http\Controllers\OpdController::class, 'detail'])->name('opd.tracking.detail');

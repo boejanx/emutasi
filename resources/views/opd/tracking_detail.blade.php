@@ -25,9 +25,25 @@
                                     <div class="col-8">: {{ $usulan->created_at->format('d F Y') }}</div>
                                     <div class="col-4 text-muted">Status Terakhir</div>
                                     <div class="col-8">: 
-                                        <span class="badge {{ $usulan->status == 5 ? 'bg-success' : ($usulan->status == 99 ? 'bg-danger' : 'bg-primary') }}">
-                                            {{ $usulan->status == 5 ? 'Selesai' : ($usulan->status == 4 ? 'Menunggu SK' : 'Diproses') }}
-                                        </span>
+                                        @if($usulan->status == 0)
+                                            <span class="badge bg-warning text-dark"><i class="fa fa-clock me-1"></i>Menunggu Verifikasi</span>
+                                        @elseif($usulan->status == 1)
+                                            <span class="badge bg-info"><i class="fa fa-spinner fa-spin me-1"></i>Pemeriksaan Tahap 1</span>
+                                        @elseif($usulan->status == 2)
+                                            <span class="badge bg-primary"><i class="fa fa-cogs me-1"></i>Pemeriksaan Tahap 2</span>
+                                        @elseif($usulan->status == 3)
+                                            <span class="badge bg-primary"><i class="fa fa-file-signature me-1"></i>Proses SK</span>
+                                        @elseif($usulan->status == 4)
+                                            <span class="badge bg-success"><i class="fa fa-check-double me-1"></i>Menunggu SK</span>
+                                        @elseif($usulan->status == 5)
+                                            <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Selesai / SK Terbit</span>
+                                        @elseif($usulan->status == 98)
+                                            <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Ditolak Permanen</span>
+                                        @elseif($usulan->status == 99)
+                                            <span class="badge bg-warning text-dark"><i class="fa fa-exclamation-triangle me-1"></i>Perlu Revisi</span>
+                                        @else
+                                            <span class="badge bg-secondary">Diproses</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

@@ -4,22 +4,41 @@
         <h1 class="h3 mb-3">AJUKAN MUTASI</h1>
 
         @if($hasActiveUsulan)
-            <div class="alert alert-warning fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #ffc107;">
-                <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
-                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-4 shadow-sm" style="width: 60px; height: 60px;">
-                        <i class="fa fa-exclamation-triangle fa-2x"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h4 class="alert-heading fw-bold mb-1 text-dark">Pengajuan Sedang Diproses</h4>
-                        <p class="mb-0 text-dark">Anda saat ini memiliki usulan mutasi yang sedang dalam tahap verifikasi. Anda tidak dapat mengajukan usulan baru hingga proses ini selesai.</p>
-                    </div>
-                    <div class="mt-3 mt-md-0 ms-md-4 flex-shrink-0">
-                        <a href="{{ route('pns.tracking.detail', $lastUsulan->id_usulan) }}" class="btn btn-warning shadow-sm border border-warning fw-bold px-4 py-2" style="border-radius: 50px; background-color: #f7b924; color: #fff;">
-                            <i class="fa fa-calendar-check me-2"></i> Lihat Detail Progres
-                        </a>
+            @if($activeUsulan->status == 99)
+                <div class="alert alert-warning fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #ffc107;">
+                    <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
+                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-4 shadow-sm" style="width: 60px; height: 60px;">
+                            <i class="fa fa-edit fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="alert-heading fw-bold mb-1 text-dark">Perlu Revisi Dokumen!</h4>
+                            <p class="mb-0 text-dark">Usulan Anda sebelumnya dikembalikan oleh verifikator karena ada dokumen yang tidak sesuai. Anda tidak dapat mengajukan usulan baru sebelum merevisi dokumen tersebut.</p>
+                        </div>
+                        <div class="mt-3 mt-md-0 ms-md-4 flex-shrink-0">
+                            <a href="{{ route('pns.tracking.detail', $activeUsulan->id_usulan) }}" class="btn btn-warning shadow-sm border border-warning fw-bold px-4 py-2" style="border-radius: 50px; background-color: #f7b924; color: #fff;">
+                                <i class="fa fa-upload me-2"></i> Perbaiki Berkas
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @else
+                <div class="alert alert-info fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #17a2b8;">
+                    <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
+                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-4 shadow-sm" style="width: 60px; height: 60px;">
+                            <i class="fa fa-spinner fa-spin fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="alert-heading fw-bold mb-1 text-dark">Pengajuan Sedang Diproses</h4>
+                            <p class="mb-0 text-dark">Anda saat ini memiliki usulan mutasi yang sedang dalam tahap verifikasi BKPSDM. Anda tidak dapat mengajukan usulan baru hingga proses ini selesai.</p>
+                        </div>
+                        <div class="mt-3 mt-md-0 ms-md-4 flex-shrink-0">
+                            <a href="{{ route('pns.tracking.detail', $activeUsulan->id_usulan) }}" class="btn btn-info shadow-sm border border-info fw-bold px-4 py-2 text-white" style="border-radius: 50px;">
+                                <i class="fa fa-calendar-check me-2"></i> Lihat Progres
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @elseif($lastUsulan)
             @if($lastUsulan->status == 4 || $lastUsulan->status == 5)
                 <div class="alert alert-success fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #28a745;">
@@ -33,7 +52,7 @@
                         </div>
                     </div>
                 </div>
-            @elseif($lastUsulan->status == 99)
+            @elseif($lastUsulan->status == 98)
                 <div class="alert alert-danger fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #dc3545;">
                     <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
                         <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-4 shadow-sm" style="width: 60px; height: 60px;">
@@ -41,7 +60,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h4 class="alert-heading fw-bold mb-1">Usulan Terakhir: Ditolak</h4>
-                            <p class="mb-0">Pengajuan mutasi Anda sebelumnya ditolak. Anda dapat memperbaiki berkas dan mengajukan ulang usulan baru melalui form di bawah ini.</p>
+                            <p class="mb-0">Pengajuan mutasi Anda sebelumnya sayangnya ditolak secara permanen. Anda dapat memulai ulang dan mengajukan usulan baru melalui form di bawah ini.</p>
                         </div>
                     </div>
                 </div>

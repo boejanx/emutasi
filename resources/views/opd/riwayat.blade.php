@@ -28,6 +28,8 @@
                                         <td>
                                             @if($usulan->status == 5)
                                                 <span class="badge bg-success">Selesai / SK Terbit</span>
+                                            @elseif($usulan->status == 98)
+                                                <span class="badge bg-danger">Ditolak Permanen</span>
                                             @elseif($usulan->status == 99)
                                                 <span class="badge bg-danger">Ditolak / Perlu Revisi</span>
                                             @elseif($usulan->status == 4)
@@ -81,11 +83,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="alert alert-info py-2">
-                                <small class="fw-bold d-block mb-1">Status Saat Ini:</small>
-                                @if($usulan->status == 5) Selesai - SK Telah Terbit
-                                @elseif($usulan->status == 4) Menunggu Admin Upload SK
-                                @elseif($usulan->status == 99) Berkas Perlu Diperbaiki
-                                @else Sedang diverifikasi di BKPSDM @endif
+                                <div class="fw-bold d-block mb-1">Status Saat Ini:</div>
+                                <span class="fw-semibold">
+                                    @if($usulan->status == 5) Selesai - SK Telah Terbit
+                                    @elseif($usulan->status == 4) Menunggu Verifikator Mengunggah SK
+                                    @elseif($usulan->status == 98) Berkas Ditolak Permanen
+                                    @elseif($usulan->status == 99) Berkas Ditolak / Perlu Diperbaiki
+                                    @else Sedang Diverifikasi di BKPSDM @endif
+                                </span>
                             </div>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Models\SystemLog;
 
 class ManageUserController extends Controller
 {
@@ -25,11 +26,19 @@ class ManageUserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
             'password' => Hash::make($request->password),
+        ]);
+
+        SystemLog::create([
+            'id_user' => auth()->id() ?? 1,
+            'action' => 'TAMBAH_USER',
+            'description' => 'Menambahkan pengguna baru: ' . $user->name . ' (' . $user->email . ')',
+            'ip_address' => request()->ip() ?? '127.0.0.1',
+            'user_agent' => request()->userAgent() ?? 'System',
         ]);
 
         return redirect()->back()->with('success', 'Pengguna berhasil ditambahkan.');
@@ -58,13 +67,32 @@ class ManageUserController extends Controller
 
         $user->update($data);
 
+        SystemLog::create([
+            'id_user' => auth()->id() ?? 1,
+            'action' => 'UPDATE_USER',
+            'description' => 'Memperbarui data pengguna: ' . $user->name . ' (' . $user->email . ')',
+            'ip_address' => request()->ip() ?? '127.0.0.1',
+            'user_agent' => request()->userAgent() ?? 'System',
+        ]);
+
         return redirect()->back()->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+        $name = $user->name;
+        $email = $user->email;
+        
         $user->delete();
+
+        SystemLog::create([
+            'id_user' => auth()->id() ?? 1,
+            'action' => 'HAPUS_USER',
+            'description' => 'Menghapus pengguna: ' . $name . ' (' . $email . ')',
+            'ip_address' => request()->ip() ?? '127.0.0.1',
+            'user_agent' => request()->userAgent() ?? 'System',
+        ]);
 
         return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }

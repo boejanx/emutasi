@@ -64,8 +64,10 @@
                                             <span class="badge bg-success">Valid / Lengkap</span>
                                         @elseif($detail->status == 2)
                                             <span class="badge bg-warning text-dark"><i class="fa fa-exclamation-triangle"></i> Revisi Berkas</span>
+                                        @elseif($data->status == 98)
+                                            <span class="badge bg-danger">Ditolak Permanen</span>
                                         @elseif($data->status == 99)
-                                            <span class="badge bg-danger">Ditolak / Belum Lengkap</span>
+                                            <span class="badge bg-warning text-dark">Berkas Perlu Revisi</span>
                                         @else
                                             <span class="badge bg-secondary">Menunggu Verifikasi</span>
                                         @endif

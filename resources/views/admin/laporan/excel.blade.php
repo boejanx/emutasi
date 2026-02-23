@@ -42,6 +42,7 @@
                     </td>
                     <td>
                         @if($u->status == 5) Selesai / SK Terbit
+                        @elseif($u->status == 98) Ditolak Permanen
                         @elseif($u->status == 99) Ditolak
                         @else Dalam Proses
                         @endif

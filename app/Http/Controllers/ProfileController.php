@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\SystemLog;
+
 
 class ProfileController extends Controller
 {
@@ -34,6 +36,14 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        SystemLog::create([
+            'id_user' => Auth::id(),
+            'action' => 'UPDATE_PROFIL',
+            'description' => 'User memperbarui informasi profil.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -51,6 +61,14 @@ class ProfileController extends Controller
         Auth::logout();
 
         $user->delete();
+
+        SystemLog::create([
+            'id_user' => $userId,
+            'action' => 'HAPUS_AKUN',
+            'description' => 'User menghapus akun mereka sendiri.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

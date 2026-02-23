@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Models\SystemLog;
 
 class RegisteredUserController extends Controller
 {
@@ -42,6 +43,14 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        SystemLog::create([
+            'id_user' => $user->id,
+            'action' => 'REGISTER',
+            'description' => 'User baru mendaftar: ' . $user->name . ' (' . $user->email . ')',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
 
         Auth::login($user);
 

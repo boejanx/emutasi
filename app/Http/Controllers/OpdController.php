@@ -70,9 +70,9 @@ class OpdController extends Controller
         // File validation rules for each PNS
         foreach ($request->input('details', []) as $index => $detail) {
             foreach ($dokumenSyarat as $dok) {
-                // Formatting input name: file_dokumen_{pns_index}_{dok_id}
-                $inputName = "file_dokumen_{$index}_{$dok->id_dokumen}";
-                $rules[$inputName] = 'required|file|mimes:pdf|max:2048';
+                // Formatting input name: file_dokumen_temp_{pns_index}_{dok_id}
+                $inputName = "file_dokumen_temp_{$index}_{$dok->id_dokumen}";
+                $rules[$inputName] = 'required|string';
             }
         }
 
@@ -88,9 +88,9 @@ class OpdController extends Controller
             foreach ($details as $index => $detailData) {
                 $berkas = [];
                 foreach ($dokumenSyarat as $dok) {
-                    $inputName = "file_dokumen_{$index}_{$dok->id_dokumen}";
-                    if ($request->hasFile($inputName)) {
-                        $path = $request->file($inputName)->store('berkas_mutasi', 'public');
+                    $inputName = "file_dokumen_temp_{$index}_{$dok->id_dokumen}";
+                    if ($request->filled($inputName)) {
+                        $path = $request->input($inputName);
                         $berkas[] = [
                             'id_dokumen' => $dok->id_dokumen,
                             'path_dokumen' => $path
@@ -135,5 +135,28 @@ class OpdController extends Controller
             ->findOrFail($id);
 
         return view('opd.tracking_detail', compact('usulan'));
+    }
+
+    public function uploadTemp(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:2048'
+        ]);
+
+        try {
+            if ($request->hasFile('file')) {
+                $path = $request->file('file')->store('berkas_mutasi', 'public');
+                return response()->json([
+                    'status' => 'success',
+                    'path' => $path
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Gagal Upload Temp OPD', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengunggah dokumen sementara'
+            ], 500);
+        }
     }
 }

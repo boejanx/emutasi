@@ -224,19 +224,27 @@
                         <div class="mb-3 final-verifikasi-container">
                             <label class="form-label fw-bold">Status Verifikasi Usulan: <span class="text-danger">*</span></label>
 
-                            <label class="form-check p-3 border rounded border-success bg-light mb-2 custom-radio-box final-radio-terima" style="opacity: 0.5; pointer-events: none;">
-                                <input class="form-check-input ms-0 mt-1" type="radio" value="terima" name="status_verifikasi" required disabled>
+                            <label class="form-check p-2 border rounded border-success bg-light mb-2 custom-radio-box final-radio-terima" style="opacity: 0.5; pointer-events: none;">
+                                <input class="form-check-input ms-0 mt-2" type="radio" value="terima" name="status_verifikasi" required disabled>
                                 <span class="form-check-label ms-4 d-block">
                                     <strong class="text-success">Berkas Lengkap & Setuju Terbitkan SK</strong><br>
-                                    <small class="text-muted">Status ini akan otomatis terpilih jika seluruh berkas Sesuai.</small>
+                                    <small class="text-muted">Otomatis terpilih jika seluruh berkas Sesuai.</small>
                                 </span>
                             </label>
 
-                            <label class="form-check p-3 border rounded border-danger bg-light mb-2 custom-radio-box final-radio-tolak" style="opacity: 0.5; pointer-events: none;">
-                                <input class="form-check-input ms-0 mt-1" type="radio" value="tolak" name="status_verifikasi" required disabled>
+                            <label class="form-check p-2 border rounded border-warning bg-light mb-2 custom-radio-box final-radio-revisi" style="opacity: 0.5; pointer-events: none;">
+                                <input class="form-check-input ms-0 mt-2" type="radio" value="revisi" name="status_verifikasi" required disabled>
                                 <span class="form-check-label ms-4 d-block">
-                                    <strong class="text-danger">Berkas Tidak Lengkap / Tolak Usulan</strong><br>
-                                    <small class="text-muted">Status ini akan otomatis terpilih jika salah satu berkas ditolak.</small>
+                                    <strong class="text-warning text-dark">Berkas Perlu Direvisi</strong><br>
+                                    <small class="text-muted">Otomatis terpilih jika ada berkas yang Tidak Sesuai. PNS bisa memperbaiki.</small>
+                                </span>
+                            </label>
+
+                            <label class="form-check p-2 border rounded border-danger bg-light mb-2 custom-radio-box final-radio-tolak" style="opacity: 0.5; pointer-events: none;">
+                                <input class="form-check-input ms-0 mt-2" type="radio" value="tolak" name="status_verifikasi" required disabled>
+                                <span class="form-check-label ms-4 d-block">
+                                    <strong class="text-danger">Tolak Permanen</strong><br>
+                                    <small class="text-muted">Pilih ini secara manual jika usulan mutasi ditolak mutlak (PNS tidak bisa merevisi).</small>
                                 </span>
                             </label>
                         </div>
@@ -341,8 +349,11 @@
                 if (berkasRadios.length === 0) return; // Skip if no files
 
                 const radioTerima = form.querySelector('input[name="status_verifikasi"][value="terima"]');
+                const radioRevisi = form.querySelector('input[name="status_verifikasi"][value="revisi"]');
                 const radioTolak = form.querySelector('input[name="status_verifikasi"][value="tolak"]');
+                
                 const labelTerima = form.querySelector('.final-radio-terima');
+                const labelRevisi = form.querySelector('.final-radio-revisi');
                 const labelTolak = form.querySelector('.final-radio-tolak');
 
                 function updateFinalStatus() {
@@ -362,31 +373,46 @@
                     });
 
                     if (allChecked) {
-                        // Activate both styles slightly
                         labelTerima.style.opacity = '1';
+                        labelRevisi.style.opacity = '1';
                         labelTolak.style.opacity = '1';
                         
+                        radioTerima.disabled = false;
+                        radioRevisi.disabled = false;
+                        radioTolak.disabled = false;
+
+                        // Enable manual clicking on the container labels now
+                        labelTerima.style.pointerEvents = 'auto';
+                        labelRevisi.style.pointerEvents = 'auto';
+                        labelTolak.style.pointerEvents = 'auto';
+                        
+                        // We only auto-select upon initial all-checked or if we want to force it
+                        // But let's keep it simple: auto update if they are just checking boxes
                         if (hasTolak) {
-                            // Automatically select reject
-                            radioTerima.disabled = true;
-                            radioTolak.disabled = false;
-                            radioTolak.checked = true;
-                            labelTerima.style.opacity = '0.5'; // Dim accept
+                            radioRevisi.checked = true;
+                            labelTerima.style.opacity = '0.5';
                         } else {
-                            // Automatically select accept
-                            radioTolak.disabled = true;
-                            radioTerima.disabled = false;
                             radioTerima.checked = true;
-                            labelTolak.style.opacity = '0.5'; // Dim reject
+                            labelRevisi.style.opacity = '0.5';
+                            labelTolak.style.opacity = '0.5';
                         }
+
                     } else {
                         // Still incomplete
                         radioTerima.disabled = true;
                         radioTerima.checked = false;
+                        radioRevisi.disabled = true;
+                        radioRevisi.checked = false;
                         radioTolak.disabled = true;
                         radioTolak.checked = false;
+                        
                         labelTerima.style.opacity = '0.5';
+                        labelRevisi.style.opacity = '0.5';
                         labelTolak.style.opacity = '0.5';
+                        
+                        labelTerima.style.pointerEvents = 'none';
+                        labelRevisi.style.pointerEvents = 'none';
+                        labelTolak.style.pointerEvents = 'none';
                     }
 
                     // AUTO-FILL CATATAN based on rejected items

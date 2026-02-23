@@ -49,7 +49,7 @@ class AdminController extends Controller
     public function storeVerifikasi(Request $request, $id)
     {
         $request->validate([
-            'status_verifikasi' => 'required|in:terima,tolak',
+            'status_verifikasi' => 'required|in:terima,tolak,revisi',
             'catatan' => 'nullable|string',
             'berkas_status' => 'required|array'
         ]);
@@ -77,20 +77,35 @@ class AdminController extends Controller
             );
 
             return back()->with('success', 'Berkas berhasil diverifikasi. Status: Menunggu Upload SK.');
-        } else {
+        } elseif ($request->status_verifikasi === 'revisi') {
             $usulan->update([
-                'status'    => 99, // Berkas Ditolak / Perlu Revisi
-                'disposisi' => 3   // Selesai di inbox (pindah ke riwayat/tunggu revisi)
+                'status'    => 99, // Berkas Perlu Revisi
+                'disposisi' => 3   // Selesai di inbox admin (kembali ke instansi/PNS)
+            ]);
+
+            $this->usulanService->logUsulan(
+                $usulan->id_usulan,
+                'BERKAS_REVISI',
+                'Status Revisi',
+                'Verifikasi selesai. PNS perlu memperbaiki berkas yang ditolak. Catatan: ' . ($request->catatan ?? '-')
+            );
+
+            return back()->with('warning', 'Usulan dikembalikan untuk revisi. Berkas yang tidak disetujui harus di-upload ulang oleh pengusul.');
+        } else {
+            // Tolak Mutlak
+            $usulan->update([
+                'status'    => 98, // Tolak Permanen
+                'disposisi' => 3   // Selesai
             ]);
 
             $this->usulanService->logUsulan(
                 $usulan->id_usulan,
                 'VERIFIKASI_DITOLAK',
                 'Berkas Ditolak',
-                'Verifikasi staf selesai. Terdapat berkas yang ditolak. Catatan: ' . ($request->catatan ?? '-')
+                'Usulan ditolak permanen. Catatan: ' . ($request->catatan ?? '-')
             );
 
-            return back()->with('success', 'Berkas ditolak. PNS perlu melakukan revisi.');
+            return back()->with('error', 'Usulan telah ditolak secara peringatan. Pihak pengusul tidak dapat mengunggah revisi pada usulan ini.');
         }
     }
 

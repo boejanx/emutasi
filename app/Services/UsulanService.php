@@ -6,6 +6,7 @@ use App\Models\Usulan;
 use App\Models\UsulanLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\SystemLog;
 
 class UsulanService
 {
@@ -106,6 +107,14 @@ class UsulanService
              // This can get complex depending on whether you want to sync, add, or delete related records
              // For simplicity, this example does not sync detailed relations automatically.
  
+             SystemLog::create([
+                 'id_user' => auth()->id() ?? 1,
+                 'action' => 'UPDATE_USULAN',
+                 'description' => 'Memperbarui data Usulan No. ' . ($usulan->no_surat ?? $id),
+                 'ip_address' => request()->ip() ?? '127.0.0.1',
+                 'user_agent' => request()->userAgent() ?? 'System',
+             ]);
+
              DB::commit();
              return $usulan;
          } catch (\Exception $e) {
@@ -131,6 +140,14 @@ class UsulanService
              // depending on how onDelete('cascade') affects soft deletes in your setup, 
              // usually deleting the parent triggers soft deletes on children if configured correctly.
              
+             SystemLog::create([
+                 'id_user' => auth()->id() ?? 1,
+                 'action' => 'HAPUS_USULAN',
+                 'description' => 'Menghapus Usulan No. ' . ($usulan->no_surat ?? $id),
+                 'ip_address' => request()->ip() ?? '127.0.0.1',
+                 'user_agent' => request()->userAgent() ?? 'System',
+             ]);
+
              $deleted = $usulan->delete();
              
              DB::commit();
@@ -162,8 +179,22 @@ class UsulanService
             'id_user' => $userId ?? auth()->id() ?? 1,
         ]);
 
+        $usulan = Usulan::find($idUsulan);
+
+        // Catat juga ke Audit Trail (SystemLog)
         try {
-            $usulan = Usulan::find($idUsulan);
+            SystemLog::create([
+                'id_user' => $userId ?? auth()->id() ?? 1,
+                'action' => $aksi,
+                'description' => "Usulan No. " . ($usulan->no_surat ?? $idUsulan) . " - " . ($statusUsulan ?? '') . ": " . ($keterangan ?? '-'),
+                'ip_address' => request()->ip() ?? '127.0.0.1',
+                'user_agent' => request()->userAgent() ?? 'System',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to write SystemLog', ['error' => $e->getMessage()]);
+        }
+
+        try {
             if ($usulan && !empty($usulan->no_whatsapp)) {
                 $waAksi = $aksi;
                 $waKeterangan = $keterangan ?? '-';

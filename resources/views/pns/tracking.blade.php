@@ -30,8 +30,10 @@
                                     </td>
                                     <td>{{ $usulan->perihal }}</td>
                                     <td>
-                                        @if($usulan->status == 99)
-                                            <span class="badge bg-danger">Berkas Ditolak / Revisi</span>
+                                        @if($usulan->status == 98)
+                                            <span class="badge bg-danger">Ditolak Permanen</span>
+                                        @elseif($usulan->status == 99)
+                                            <span class="badge bg-warning text-dark"><i class="fa fa-exclamation-triangle"></i> Perlu Revisi</span>
                                         @elseif($usulan->status >= 4)
                                             <span class="badge bg-success">Usulan Selesai Diproses</span>
                                         @elseif($usulan->disposisi >= 2)

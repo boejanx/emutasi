@@ -50,6 +50,8 @@
                                                 <span class="badge bg-warning text-dark">Menunggu SK / ACC</span>
                                             @elseif($usulan->status == 5)
                                                 <span class="badge bg-success">Selesai (SK Terbit)</span>
+                                            @elseif($usulan->status == 98)
+                                                <span class="badge bg-danger">Ditolak</span>
                                             @elseif($usulan->status == 99)
                                                 <span class="badge bg-danger">Berkas Tidak Valid</span>
                                             @else

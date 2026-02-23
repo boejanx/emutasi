@@ -12,12 +12,11 @@ class PnsController extends Controller
     {
         // Cari usulan yang sedang aktif (masih dalam proses verifikasi/progres)
         // Status: 0=Draft, 1=Diajukan, 2=Disposisi, 3=Diproses
-        // Status 4 (Selesai) dan 99 (Ditolak/Revisi) dianggap sudah memiliki keputusan final/tindakan lanjut.
-        // Namun jika 99 adalah 'Revisi Berkas', biasanya dianggap masih aktif. 
-        // Sesuai permintaan user: Jika Selesai/Ditolak boleh mengajukan lagi.
+        // Status 4 (Selesai), 5 (SK Terbit) dan 98 (Ditolak) dianggap sudah memiliki keputusan final/tindakan lanjut.
+        // Status 99 (Revisi Berkas) dianggap masih aktif karena harus diperbaiki.
         
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 99])
+            ->whereNotIn('status', [4, 5, 98])
             ->first();
             
         $lastUsulan = Usulan::where('id_user', auth()->id())->latest()->first();

@@ -128,6 +128,8 @@
                                             <span class="badge bg-success">Selesai</span>
                                         @elseif($lus->status == 4)
                                             <span class="badge bg-primary">Menunggu SK</span>
+                                        @elseif($lus->status == 98)
+                                            <span class="badge bg-danger">Ditolak Permanen</span>
                                         @elseif($lus->status == 99)
                                             <span class="badge bg-danger">Ditolak</span>
                                         @else
@@ -219,11 +221,11 @@
                         </div>
 
                         @if($my_usulan)
-                            <div class="alert {{ $my_usulan->status == 99 ? 'alert-danger' : ($my_usulan->status == 5 ? 'alert-success' : 'alert-info') }} border-0 shadow-sm p-4 d-block w-100">
+                            <div class="alert {{ in_array($my_usulan->status, [98, 99]) ? 'alert-danger' : ($my_usulan->status == 5 ? 'alert-success' : 'alert-info') }} border-0 shadow-sm p-4 d-block w-100">
                                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center mb-3 mb-md-0">
-                                        <div class="stat {{ $my_usulan->status == 99 ? 'bg-danger text-white' : ($my_usulan->status == 5 ? 'bg-success text-white' : 'bg-primary text-white') }} me-3 flex-shrink-0 shadow-sm" style="width: 50px; height: 50px;">
-                                            <i class="fa {{ $my_usulan->status == 99 ? 'fa-exclamation-triangle' : ($my_usulan->status == 5 ? 'fa-check-double' : 'fa-spinner fa-spin') }} fa-lg"></i>
+                                        <div class="stat {{ in_array($my_usulan->status, [98, 99]) ? 'bg-danger text-white' : ($my_usulan->status == 5 ? 'bg-success text-white' : 'bg-primary text-white') }} me-3 flex-shrink-0 shadow-sm" style="width: 50px; height: 50px;">
+                                            <i class="fa {{ in_array($my_usulan->status, [98, 99]) ? 'fa-exclamation-triangle' : ($my_usulan->status == 5 ? 'fa-check-double' : 'fa-spinner fa-spin') }} fa-lg"></i>
                                         </div>
                                         <div>
                                             <h5 class="mb-1 fw-bold text-dark">Status Usulan Terakhir</h5>
@@ -231,8 +233,8 @@
                                         </div>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-white shadow-sm border {{ $my_usulan->status == 99 ? 'text-danger border-danger' : ($my_usulan->status == 5 ? 'text-success border-success' : 'text-primary border-primary') }} px-3 py-2" style="font-size: 0.85rem;">
-                                            {{ $my_usulan->status == 5 ? 'Selesai / SK Terbit' : ($my_usulan->status == 4 ? 'Menunggu SK' : ($my_usulan->status == 99 ? 'Perlu Revisi' : 'Sedang Diproses')) }}
+                                        <span class="badge bg-white shadow-sm border {{ in_array($my_usulan->status, [98, 99]) ? 'text-danger border-danger' : ($my_usulan->status == 5 ? 'text-success border-success' : 'text-primary border-primary') }} px-3 py-2" style="font-size: 0.85rem;">
+                                            {{ $my_usulan->status == 5 ? 'Selesai / SK Terbit' : ($my_usulan->status == 4 ? 'Menunggu SK' : ($my_usulan->status == 98 ? 'Ditolak Permanen' : ($my_usulan->status == 99 ? 'Perlu Revisi' : 'Sedang Diproses'))) }}
                                         </span>
                                     </div>
                                 </div>
@@ -243,9 +245,9 @@
                                         elseif($my_usulan->status == 4) $progress = 80;
                                         elseif($my_usulan->status == 1) $progress = 20;
                                         elseif($my_usulan->status == 3) $progress = 50;
-                                        elseif($my_usulan->status == 99) $progress = 40;
+                                        elseif(in_array($my_usulan->status, [98, 99])) $progress = 40;
                                     @endphp
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ $my_usulan->status == 99 ? 'bg-danger' : 'bg-success' }}" style="width:{{ $progress }}%"></div>
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ in_array($my_usulan->status, [98, 99]) ? 'bg-danger' : 'bg-success' }}" style="width:{{ $progress }}%"></div>
                                 </div>
                                 <div class="d-flex justify-content-between small fw-bold px-1" style="color: rgba(0,0,0,0.5);">
                                     <span>Diajukan</span>
@@ -253,7 +255,7 @@
                                     <span>SK Terbit</span>
                                 </div>
                                 <div class="mt-4 pt-3 text-end" style="border-top: 1px dashed rgba(0,0,0,0.1);">
-                                    <a href="{{ route('pns.tracking.detail', $my_usulan->id_usulan) }}" class="btn {{ $my_usulan->status == 99 ? 'btn-danger' : 'btn-primary' }} fw-bold px-4 shadow-sm">Lihat Detail Tracking <i class="fa fa-arrow-right ms-2"></i></a>
+                                    <a href="{{ route('pns.tracking.detail', $my_usulan->id_usulan) }}" class="btn {{ in_array($my_usulan->status, [98, 99]) ? 'btn-danger' : 'btn-primary' }} fw-bold px-4 shadow-sm">Lihat Detail Tracking <i class="fa fa-arrow-right ms-2"></i></a>
                                 </div>
                             </div>
                         @else

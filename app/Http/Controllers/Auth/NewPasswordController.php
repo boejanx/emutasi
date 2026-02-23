@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Models\SystemLog;
+
 
 class NewPasswordController extends Controller
 {
@@ -48,6 +50,15 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                SystemLog::create([
+                    'id_user' => $user->id,
+                    'action' => 'RESET_PASSWORD',
+                    'description' => 'User berhasil melakukan reset password (lupa password).',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent()
+                ]);
+
             }
         );
 

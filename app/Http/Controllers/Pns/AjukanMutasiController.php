@@ -21,10 +21,9 @@ class AjukanMutasiController extends Controller
 
     public function create()
     {
-        // Block access to form ONLY if user already has an active usulan
-        // Status besides 4 (Selesai) and 99 (Ditolak/Revisi)
+        // Status besides 4 (Selesai), 5 (SK Terbit), and 98 (Ditolak)
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 99])
+            ->whereNotIn('status', [4, 5, 98])
             ->exists();
 
         if ($activeUsulan) {
@@ -39,7 +38,7 @@ class AjukanMutasiController extends Controller
     {
         // Block submission if somehow user bypassed the UI button lock
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 99])
+            ->whereNotIn('status', [4, 5, 98])
             ->exists();
 
         if ($activeUsulan) {

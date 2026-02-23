@@ -122,6 +122,8 @@
                                     <td>
                                         @if($u->status == 5)
                                             <span class="badge bg-success">Selesai SK Terbit</span>
+                                        @elseif($u->status == 98)
+                                            <span class="badge bg-danger">Ditolak Permanen</span>
                                         @elseif($u->status == 99)
                                             <span class="badge bg-danger">Ditolak</span>
                                         @else
