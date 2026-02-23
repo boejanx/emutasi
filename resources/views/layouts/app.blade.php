@@ -9,22 +9,23 @@
     <meta content="Trifwal" name="author">
     <meta content="mutasi, emutasi, bkpsdm, kabupaten pekalongan" name="keywords">
 
-    <link href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="img/icons/icon-48x48.png" rel="shortcut icon" />
+    <link href="{{ asset('img/icons/icon-48x48.png') }}" rel="shortcut icon" />
 
     <title>e-Mut Kabupaten Pekalongan</title>
 
     <link href="{{asset('assets/css/app.css')}}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 
 <body>
     <div class="wrapper">
         <nav class="sidebar js-sidebar" id="sidebar">
             <div class="sidebar-content js-simplebar">
-                <a class="sidebar-brand" href="index.html">
-                    <span class="align-middle">E-Mutasi</span>
+                <a class="d-block w-100 p-0 m-0" href="{{ route('dashboard') }}">
+                    <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" class="w-100 d-block m-0 p-0">
                 </a>
 
                 <ul class="sidebar-nav">
@@ -34,6 +35,58 @@
                             <i class="align-middle fa fa-home"></i> <span class="align-middle">Dashboard</span>
                         </a>
                     </li>
+
+                    {{-- ============================================= --}}
+                    {{-- Surat Masuk - Role 0 (Pimpinan) only --}}
+                    {{-- ============================================= --}}
+                    @if(Auth::user()->role == 0)
+                    <li class="sidebar-header">
+                        Surat Masuk
+                    </li>
+
+                    <li class="sidebar-item {{ request()->is('pimpinan/inbox*') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('pimpinan.inbox') }}">
+                            <i class="align-middle fa fa-inbox"></i> <span class="align-middle">Inbox Usulan</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item {{ request()->routeIs('pimpinan.riwayat') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('pimpinan.riwayat') }}">
+                            <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Disetujui</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('admin.laporan') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.laporan') }}">
+                            <i class="align-middle fa fa-print"></i> <span class="align-middle">Laporan & Rekap</span>
+                        </a>
+                    </li>
+                    @endif
+
+                    {{-- ============================================= --}}
+                    {{-- Surat Masuk - Role 4 (Kepala Bidang) only --}}
+                    {{-- ============================================= --}}
+                    @if(Auth::user()->role == 4)
+                    <li class="sidebar-header">
+                        Mutasi Bidang
+                    </li>
+
+                    <li class="sidebar-item {{ request()->is('kabid/inbox*') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('kabid.inbox') }}">
+                            <i class="align-middle fa fa-inbox"></i> <span class="align-middle">Inbox Disposisi</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item {{ request()->routeIs('kabid.riwayat') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('kabid.riwayat') }}">
+                            <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Disetujui</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('admin.laporan') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.laporan') }}">
+                            <i class="align-middle fa fa-print"></i> <span class="align-middle">Laporan Rekapitulasi</span>
+                        </a>
+                    </li>
+                    @endif
 
                     {{-- ============================================= --}}
                     {{-- Mutasiku - Role 3 (User Biasa) only --}}
@@ -61,18 +114,18 @@
                     {{-- ============================================= --}}
                     @if(Auth::user()->role == 2)
                     <li class="sidebar-header">
-                        Mutasi
+                        Mutasi Instansi
                     </li>
 
-                    <li class="sidebar-item {{ request()->is('opd*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('opd.index') }}">
-                            <i class="align-middle fa fa-square-plus"></i> <span class="align-middle">Pengajuan Baru</span>
+                    <li class="sidebar-item {{ request()->routeIs('opd.usulan.create') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('opd.usulan.create') }}">
+                            <i class="align-middle fa fa-file-signature"></i> <span class="align-middle">Buat Usulan Baru</span>
                         </a>
                     </li>
 
-                    <li class="sidebar-item {{ request()->is('opd/tracking*') ? 'active' : '' }}">
-                        <a class="sidebar-link" href="{{ route('pns.tracking') }}">
-                            <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Pengajuan</span>
+                    <li class="sidebar-item {{ request()->routeIs('opd.riwayat') || request()->routeIs('opd.tracking.detail') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('opd.riwayat') }}">
+                            <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Usulan</span>
                         </a>
                     </li>
                     @endif
@@ -85,19 +138,14 @@
                         MUTASI
                     </li>
 
-                    <li class="sidebar-item {{ request()->is('admin') ? 'active' : '' }}">
+                    <li class="sidebar-item {{ request()->is('bkpsdm') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('admin.index') }}">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Mutasi</span>
+                            <i class="align-middle fa fa-inbox"></i> <span class="align-middle">Usulan Masuk</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="{{ route('admin.index') }}">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Diproses</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Usulan Selesai</span>
+                    <li class="sidebar-item {{ request()->is('bkpsdm/tracking*') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.tracking') }}">
+                            <i class="align-middle fa fa-history"></i> <span class="align-middle">Riwayat Usulan & SK</span>
                         </a>
                     </li>
 
@@ -105,19 +153,19 @@
                         PENGATURAN
                     </li>
 
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Akun Pengguna</span>
+                    <li class="sidebar-item {{ request()->routeIs('admin.manage-users') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.manage-users') }}">
+                            <i class="align-middle fa fa-users"></i> <span class="align-middle">Akun Pengguna</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Persyaratan</span>
+                    <li class="sidebar-item {{ request()->routeIs('admin.manage-dokumen') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.manage-dokumen') }}">
+                            <i class="align-middle fa fa-folder-open"></i> <span class="align-middle">Berkas Persyaratan</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="pages-profile.html">
-                            <i class="align-middle fa fa-square"></i> <span class="align-middle">Berkas Unduhan</span>
+                    <li class="sidebar-item {{ request()->routeIs('admin.audit-trail') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.audit-trail') }}">
+                            <i class="align-middle fa fa-shield-alt"></i> <span class="align-middle">Audit Log Sistem</span>
                         </a>
                     </li>
                     @endif
@@ -137,64 +185,57 @@
                             <a class="nav-icon dropdown-toggle" data-bs-toggle="dropdown" href="#" id="alertsDropdown">
                                 <div class="position-relative">
                                     <i class="align-middle" data-feather="bell"></i>
-                                    <span class="indicator">4</span>
+                                    @if(isset($notifCount) && $notifCount > 0)
+                                        <span class="indicator">{{ $notifCount }}</span>
+                                    @endif
                                 </div>
                             </a>
                             <div aria-labelledby="alertsDropdown" class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0">
                                 <div class="dropdown-menu-header">
-                                    4 New Notifications
+                                    {{ isset($notifCount) && $notifCount > 0 ? $notifCount . ' Notifikasi Baru' : 'Tidak ada notifikasi' }}
                                 </div>
                                 <div class="list-group">
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="text-danger" data-feather="alert-circle"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">Update completed</div>
-                                                <div class="text-muted small mt-1">Restart server 12 to complete the update.</div>
-                                                <div class="text-muted small mt-1">30m ago</div>
-                                            </div>
+                                    @if(isset($notifications) && $notifications->count() > 0)
+                                        @foreach($notifications as $notif)
+                                            <a class="list-group-item" href="{{ Auth::user()->role == 0 ? route('pimpinan.inbox') : (Auth::user()->role == 4 ? route('kabid.inbox') : (Auth::user()->role == 1 ? route('admin.index') : (Auth::user()->role == 2 ? route('opd.riwayat') : route('pns.tracking')))) }}">
+                                                <div class="row g-0 align-items-center">
+                                                    <div class="col-2">
+                                                        @if(Auth::user()->role == 0 || Auth::user()->role == 4)
+                                                            <i class="text-warning fa fa-envelope fa-2x"></i>
+                                                        @elseif(Auth::user()->role == 1)
+                                                            <i class="text-primary fa fa-file-signature fa-2x"></i>
+                                                        @else
+                                                            <i class="{{ $notif->aksi == 'UPLOAD_SK' ? 'text-success fa fa-certificate' : ($notif->aksi == 'VERIFIKASI_DITOLAK' ? 'text-danger fa fa-times-circle' : 'text-primary fa fa-info-circle') }} fa-2x"></i>
+                                                        @endif
+                                                    </div>
+                                                    <div class="col-10 ps-2">
+                                                        <div class="text-dark">
+                                                            @if(in_array(Auth::user()->role, [0, 1, 4]))
+                                                                Usulan Masuk: {{ $notif->no_surat }}
+                                                            @else
+                                                                {{ $notif->status_usulan }}
+                                                            @endif
+                                                        </div>
+                                                        <div class="text-muted small mt-1">
+                                                            @if(in_array(Auth::user()->role, [0, 1, 4]))
+                                                                {{ Str::limit($notif->perihal, 40) }}
+                                                            @else
+                                                                {{ Str::limit($notif->keterangan, 40) }}
+                                                            @endif
+                                                        </div>
+                                                        <div class="text-muted small mt-1">{{ $notif->created_at->diffForHumans() }}</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endforeach
+                                    @else
+                                        <div class="list-group-item text-center text-muted py-3">
+                                            Tidak ada pemberitahuan baru hari ini.
                                         </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="text-warning" data-feather="bell"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">Lorem ipsum</div>
-                                                <div class="text-muted small mt-1">Aliquam ex eros, imperdiet vulputate hendrerit et.</div>
-                                                <div class="text-muted small mt-1">2h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="text-primary" data-feather="home"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">Login from 192.186.1.8</div>
-                                                <div class="text-muted small mt-1">5h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="text-success" data-feather="user-plus"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">New connection</div>
-                                                <div class="text-muted small mt-1">Christina accepted your request.</div>
-                                                <div class="text-muted small mt-1">14h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
+                                    @endif
                                 </div>
                                 <div class="dropdown-menu-footer">
-                                    <a class="text-muted" href="#">Show all notifications</a>
+                                    <a class="text-muted" href="#">Tampil semua pemberitahuan</a>
                                 </div>
                             </div>
                         </li>
@@ -202,66 +243,43 @@
                             <a class="nav-icon dropdown-toggle" data-bs-toggle="dropdown" href="#" id="messagesDropdown">
                                 <div class="position-relative">
                                     <i class="align-middle" data-feather="message-square"></i>
+                                    @if(isset($pesanCount) && $pesanCount > 0)
+                                        <span class="indicator bg-primary">{{ $pesanCount }}</span>
+                                    @endif
                                 </div>
                             </a>
                             <div aria-labelledby="messagesDropdown" class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0">
                                 <div class="dropdown-menu-header">
                                     <div class="position-relative">
-                                        4 New Messages
+                                        {{ isset($pesanCount) && $pesanCount > 0 ? $pesanCount . ' Pesan/Catatan Baru' : 'Tidak ada pesan' }}
                                     </div>
                                 </div>
                                 <div class="list-group">
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <img alt="Vanessa Tucker" class="avatar img-fluid rounded-circle" src="img/avatars/avatar-5.jpg">
-                                            </div>
-                                            <div class="col-10 ps-2">
-                                                <div class="text-dark">Vanessa Tucker</div>
-                                                <div class="text-muted small mt-1">Nam pretium turpis et arcu. Duis arcu tortor.</div>
-                                                <div class="text-muted small mt-1">15m ago</div>
-                                            </div>
+                                    @if(isset($headerPesans) && $headerPesans->count() > 0)
+                                        @foreach($headerPesans as $pesan)
+                                            <a class="list-group-item" href="{{ Auth::user()->role == 1 ? route('admin.tracking.detail', $pesan->id_usulan) : (Auth::user()->role == 2 ? route('opd.tracking.detail', $pesan->id_usulan) : route('pns.tracking.detail', $pesan->id_usulan)) }}">
+                                                <div class="row g-0 align-items-center">
+                                                    <div class="col-2">
+                                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 35px; height: 35px;">
+                                                            <i class="fa fa-user"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-10 ps-2">
+                                                        <div class="text-dark fw-bold">{{ $pesan->user->name ?? 'User' }}</div>
+                                                        <div class="text-muted small mt-1">{{ Str::limit($pesan->pesan, 40) }}</div>
+                                                        <div class="text-muted small mt-1">{{ $pesan->created_at->diffForHumans() }}</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endforeach
+                                    @else
+                                        <div class="list-group-item text-center text-muted py-3">
+                                            Belum ada percakapan terbaru.
                                         </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <img alt="William Harris" class="avatar img-fluid rounded-circle" src="img/avatars/avatar-2.jpg">
-                                            </div>
-                                            <div class="col-10 ps-2">
-                                                <div class="text-dark">William Harris</div>
-                                                <div class="text-muted small mt-1">Curabitur ligula sapien euismod vitae.</div>
-                                                <div class="text-muted small mt-1">2h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <img alt="Christina Mason" class="avatar img-fluid rounded-circle" src="img/avatars/avatar-4.jpg">
-                                            </div>
-                                            <div class="col-10 ps-2">
-                                                <div class="text-dark">Christina Mason</div>
-                                                <div class="text-muted small mt-1">Pellentesque auctor neque nec urna.</div>
-                                                <div class="text-muted small mt-1">4h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a class="list-group-item" href="#">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <img alt="Sharon Lessman" class="avatar img-fluid rounded-circle" src="img/avatars/avatar-3.jpg">
-                                            </div>
-                                            <div class="col-10 ps-2">
-                                                <div class="text-dark">Sharon Lessman</div>
-                                                <div class="text-muted small mt-1">Aenean tellus metus, bibendum sed, posuere ac, mattis non.</div>
-                                                <div class="text-muted small mt-1">5h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
+                                    @endif
                                 </div>
                                 <div class="dropdown-menu-footer">
-                                    <a class="text-muted" href="#">Show all messages</a>
+                                    <a class="text-muted" href="#">Lihat Semua Pesan</a>
                                 </div>
                             </div>
                         </li>
@@ -271,7 +289,7 @@
                             </a>
 
                             <a class="nav-link dropdown-toggle d-none d-sm-inline-block" data-bs-toggle="dropdown" href="#">
-                                <img alt="{{ Auth::user()->name }}" class="avatar img-fluid rounded me-1" src="assets/img/avatars/avatar.jpg" /> <span
+                                <img alt="{{ Auth::user()->name }}" class="avatar img-fluid rounded me-1" src="{{ asset('assets/img/avatars/avatar.jpg') }}" /> <span
                                     class="text-dark">{{ Auth::user()->name }}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
@@ -296,6 +314,27 @@
             </nav>
 
             <main class="content">
+                @if(session('success'))
+                    <script>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: {!! json_encode(session('success')) !!},
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    </script>
+                @endif
+
+                @if(session('error'))
+                    <script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: {!! json_encode(session('error')) !!},
+                        });
+                    </script>
+                @endif
                 {{ $slot }}
             </main>
 
@@ -326,7 +365,8 @@
         </div>
     </div>
 
-    <script src="assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </body>
 
 </html>

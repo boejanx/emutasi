@@ -15,9 +15,11 @@ class User extends Authenticatable
     /**
      * Role constants
      */
+    const ROLE_PIMPINAN = 0;
     const ROLE_ADMIN = 1;
     const ROLE_ADMIN_INSTANSI = 2;
     const ROLE_USER = 3;
+    const ROLE_KABID = 4;
 
     /**
      * The attributes that are mass assignable.
@@ -56,6 +58,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is Pimpinan
+     */
+    public function isPimpinan(): bool
+    {
+        return $this->role === self::ROLE_PIMPINAN;
+    }
+
+    /**
      * Check if user is Admin
      */
     public function isAdmin(): bool
@@ -80,14 +90,24 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is Kepala Bidang (Kabid)
+     */
+    public function isKabid(): bool
+    {
+        return $this->role === self::ROLE_KABID;
+    }
+
+    /**
      * Get role label
      */
     public function getRoleLabelAttribute(): string
     {
         return match ($this->role) {
+            self::ROLE_PIMPINAN => 'Pimpinan',
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_ADMIN_INSTANSI => 'Admin Instansi',
             self::ROLE_USER => 'User',
+            self::ROLE_KABID => 'Kepala Bidang',
             default => 'Unknown',
         };
     }

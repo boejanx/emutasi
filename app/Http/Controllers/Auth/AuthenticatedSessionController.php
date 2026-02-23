@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\SystemLog;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,6 +29,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        SystemLog::create([
+            'id_user' => Auth::id(),
+            'action' => 'LOGIN',
+            'description' => 'User berhasil login ke dalam sistem.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -36,11 +45,23 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $userId = Auth::id(); // Ambil ID sebelum dilogout
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        if ($userId) {
+            SystemLog::create([
+                'id_user' => $userId,
+                'action' => 'LOGOUT',
+                'description' => 'User berhasil keluar/logout dari sistem.',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+        }
 
         return redirect('/');
     }
