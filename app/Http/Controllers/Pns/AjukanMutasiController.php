@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Pns;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreDraftRequest;
+use App\Http\Requests\UpdateDraftRequest;
+use App\Http\Requests\SubmitUsulanRequest;
 use App\Services\UsulanService;
 use App\Models\Usulan;
 use App\Models\RefDokumen;
@@ -253,7 +256,29 @@ class AjukanMutasiController extends Controller
         Gate::authorize('update', $usulan);
 
         try {
-            $this->usulanService->updateDraft($usulan, $request->validated());
+            $data = $request->validated();
+            
+            // Build structure compatible with service
+            $data['details'] = $request->input('details') ?? [];
+            if (!empty($data['details'])) {
+                // append berkas
+                $dokumenSyarat = RefDokumen::where('status', 1)->get();
+                $berkas = [];
+                foreach ($dokumenSyarat as $dok) {
+                    $inputName = 'file_dokumen_temp_' . $dok->id_dokumen;
+                    if ($request->filled($inputName)) {
+                        $berkas[] = ['id_dokumen' => $dok->id_dokumen, 'path_dokumen' => $request->input($inputName)];
+                    }
+                }
+                $data['details'][0]['berkas'] = $berkas; 
+            }
+
+            $this->usulanService->updateDraft($usulan, $data);
+            
+            if ($request->has('redirect_to_preview')) {
+                return redirect()->route('pns.usulan.preview', $usulan->id_usulan)->with('success', 'Draft berhasil disiapkan untuk pratinjau.');
+            }
+
             return redirect()->back()->with('success', 'Draft berhasil diperbarui.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui draft: ' . $e->getMessage())->withInput();

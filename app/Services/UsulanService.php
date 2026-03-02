@@ -307,7 +307,7 @@ class UsulanService
     {
          DB::beginTransaction();
          try {
-             $usulan->update([
+            $usulan->update([
                  'no_surat' => array_key_exists('no_surat', $data) ? $data['no_surat'] : $usulan->no_surat,
                  'tanggal_surat' => array_key_exists('tanggal_surat', $data) ? $data['tanggal_surat'] : $usulan->tanggal_surat,
                  'perihal' => array_key_exists('perihal', $data) ? $data['perihal'] : $usulan->perihal,
@@ -316,6 +316,46 @@ class UsulanService
                  'path_sk' => array_key_exists('path_sk', $data) ? $data['path_sk'] : $usulan->path_sk,
              ]);
  
+             if (isset($data['details']) && is_array($data['details'])) {
+                 // For update, typically we delete old and recreate or update.
+                 // For simplicity, we can update or recreate details. Since PNS role usually only has 1 details, we can assume index 0.
+                 foreach ($data['details'] as $detailData) {
+                    $detail = $usulan->details()->updateOrCreate(
+                        ['nip' => $detailData['nip'] ?? '-'],
+                        [
+                            'nama'             => $detailData['nama'] ?? '-',
+                            'jabatan'          => $detailData['jabatan'] ?? '-',
+                            'lokasi_awal'      => $detailData['lokasi_awal'] ?? '-',
+                            'lokasi_tujuan'    => $detailData['lokasi_tujuan'] ?? '-',
+                            'catatan'          => $detailData['catatan'] ?? null,
+                            'siasn_id'         => $detailData['siasn_id'] ?? null,
+                            'unor_id_tujuan'   => $detailData['unor_id_tujuan'] ?? null,
+                            'nama_unor_tujuan' => $detailData['nama_unor_tujuan'] ?? null,
+                            'tempat_lahir'             => $detailData['tempat_lahir'] ?? null,
+                            'tanggal_lahir'            => $detailData['tanggal_lahir'] ?? null,
+                            'pangkat_akhir'            => $detailData['pangkat_akhir'] ?? null,
+                            'gol_ruang_akhir'          => $detailData['gol_ruang_akhir'] ?? null,
+                            'tmt_gol_akhir'            => $detailData['tmt_gol_akhir'] ?? null,
+                            'pendidikan_terakhir_nama' => $detailData['pendidikan_terakhir_nama'] ?? null,
+                            'jabatan_nama'             => $detailData['jabatan_nama'] ?? null,
+                            'unor_nama'                => $detailData['unor_nama'] ?? null,
+                            'unor_induk_nama'          => $detailData['unor_induk_nama'] ?? null,
+                        ]
+                    );
+
+                    if (isset($detailData['berkas']) && is_array($detailData['berkas'])) {
+                        foreach ($detailData['berkas'] as $berkasData) {
+                            if (!empty($berkasData['id_dokumen'])) {
+                                $detail->berkas()->updateOrCreate(
+                                    ['id_dokumen' => $berkasData['id_dokumen']],
+                                    ['path_dokumen' => $berkasData['path_dokumen']]
+                                );
+                            }
+                        }
+                    }
+                 }
+             }
+
              DB::commit();
              return $usulan;
          } catch (\Exception $e) {

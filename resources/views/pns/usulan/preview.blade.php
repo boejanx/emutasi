@@ -24,8 +24,8 @@
                                 <a href="{{ route('pns.usulan.edit', $usulan->id_usulan) }}" class="btn btn-warning mt-2"><i class="fa fa-edit me-1"></i> Kembali ke Mode Edit</a>
                             </div>
                         @else
-                            <div class="alert alert-success">
-                                <i class="fa fa-check-circle me-2"></i> Usulan sudah memenuhi syarat dan siap untuk disubmit.
+                            <div class="alert alert-success p-4">
+                                <i class="fa fa-check-circle me-2"></i> Berkas Usulan sudah memenuhi lengkap dan siap untuk dikirim ke BKPSDM.
                             </div>
                         @endif
 
@@ -57,7 +57,7 @@
                                         <tr><td width="35%"><strong>NIP</strong></td><td>{{ $detail->nip ?? '-' }}</td></tr>
                                         <tr><td><strong>Nama Lengkap</strong></td><td>{{ $detail->nama ?? '-' }}</td></tr>
                                         <tr><td><strong>Tempat, Tgl Lahir</strong></td><td>{{ $detail->tempat_lahir ?? '-' }}, {{ $detail->tanggal_lahir ?? '-' }}</td></tr>
-                                        <tr><td><strong>Pangkat/Gol.</strong></td><td>{{ $detail->pangkat_akhir ?? '-' }} / {{ $detail->tmt_gol_akhir ?? '-' }}</td></tr>
+                                        <tr><td><strong>Pangkat/Gol.</strong></td><td>{{ $detail->pangkat_akhir ?? '-' }} / {{ $detail->gol_ruang_akhir ?? '-' }}</td></tr>
                                         <tr><td><strong>Pendidikan Terakhir</strong></td><td>{{ $detail->pendidikan_terakhir_nama ?? '-' }}</td></tr>
                                         <tr><td><strong>Jabatan</strong></td><td>{{ $detail->jabatan_nama ?? $detail->jabatan ?? '-' }}</td></tr>
                                         <tr><td><strong>Unit Kerja Induk</strong></td><td>{{ $detail->unor_induk_nama ?? '-' }}</td></tr>

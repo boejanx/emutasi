@@ -33,6 +33,7 @@ class StoreDraftRequest extends FormRequest
             'details.*.tempat_lahir' => 'nullable|string',
             'details.*.tanggal_lahir' => 'nullable|string',
             'details.*.pangkat_akhir' => 'nullable|string',
+            'details.*.gol_ruang_akhir' => 'nullable|string',
             'details.*.tmt_gol_akhir' => 'nullable|string',
             'details.*.pendidikan_terakhir_nama' => 'nullable|string',
             'details.*.jabatan_nama' => 'nullable|string',
