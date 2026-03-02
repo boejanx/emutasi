@@ -344,7 +344,7 @@
                         <h5 class="card-title fw-bold text-muted mb-0"><i class="fa fa-list-check text-primary me-2"></i> Persyaratan Pengajuan Mutasi Baru</h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info border-0 bg-info-light mb-4">
+                        <div class="alert alert-info border-0 bg-info-light mb-4 p-3">
                             <i class="fa fa-info-circle me-1"></i> Mohon siapkan dokumen-dokumen persyaratan di bawah ini dalam format PDF sebelum Anda menekan tombol Buat Pengajuan.
                         </div>
                         <div class="table-responsive">

@@ -2,10 +2,10 @@
     <div class="d-flex w-100 h-100 min-vh-100">
         <!-- Left half: Image/Branding -->
         <div class="col-12 col-md-6 col-lg-7 d-none d-md-flex flex-column justify-content-between text-white" 
-             style="background: linear-gradient(135deg, rgba(30, 60, 114, 0.9) 0%, rgba(42, 82, 152, 0.9) 100%), url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80') center/cover no-repeat;">
+             style="background: linear-gradient(135deg, rgba(30, 60, 114, 0.9) 0%, rgba(42, 82, 152, 0.9) 100%), url('https://cdn.pekalongankab.go.id/uploads/slide1_341f8ad775.jpeg') center/cover no-repeat;">
             <div class="p-5">
                 <div class="d-flex align-items-center mb-4">
-                    <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="width: 55px; height: 55px; object-fit: contain; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.src='https://ui-avatars.com/api/?name=K+P&color=1E3C72&background=ffffff'">
+                    <img src="{{ asset('assets/img/logo_nobg.png') }}" alt="Logo" style="width: 55px; height: 55px; object-fit: contain; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.src='https://ui-avatars.com/api/?name=K+P&color=1E3C72&background=ffffff'">
                     <h3 class="ms-3 mb-0 fw-bold text-white" style="letter-spacing: 0.5px;">e-Mutasi</h3>
                 </div>
                 <h1 class="display-4 fw-bolder mt-5 mb-3 text-white" style="line-height: 1.2;">Sistem Informasi<br>Mutasi Pegawai</h1>
@@ -34,16 +34,9 @@
 
         <!-- Right half: Login Form -->
         <div class="col-12 col-md-6 col-lg-5 d-flex align-items-center justify-content-center bg-white shadow-lg z-1">
-            <div class="w-100 px-4 px-md-5 px-xl-6 py-5" style="max-width: 520px;">
-                <div class="text-center mb-5 d-md-none">
-                    <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain;" onerror="this.style.display='none'">
-                    <h3 class="mt-3 fw-bold text-primary">e-Mutasi</h3>
-                    <p class="text-muted">BKPSDM Kab. Pekalongan</p>
-                </div>
-                
-                <div class="mb-5 text-center text-md-start">
-                    <h2 class="fw-bold text-dark" style="font-size: 2rem;">Selamat Datang 👋</h2>
-                    <p class="text-secondary mt-2">Silakan masuk menggunakan NIP dan Password akun Anda untuk melanjutkan.</p>
+            <div class="w-100 px-4 px-md-5 px-xl-6 py-5" style="max-width: 520px;">                
+                <div class="text-center text-md-start">
+                    <img src="{{ asset('assets/img/logo_nobg.png') }}" alt="logo" width="100%">
                 </div>
                 
                 <form action="{{ route('login') }}" method="POST" class="needs-validation" novalidate id="loginForm">

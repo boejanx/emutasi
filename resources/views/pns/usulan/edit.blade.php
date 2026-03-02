@@ -72,8 +72,8 @@
                                 <!-- STEP 2: Data PNS -->
                                 <div class="tab-pane fade p-4 border rounded" id="step-pns" role="tabpanel" aria-labelledby="step-pns-tab">
                                     <h4 class="mb-4 text-primary"><i class="fa fa-user-tie me-2"></i>Data PNS yang Diusulkan</h4>
-                                    <div class="alert alert-info">
-                                        Untuk sementara silakan isi manual data PNS yang akan di mutasi.
+                                    <div class="alert alert-info p-3">
+                                         Klik tombol <strong>&nbsp; Get Data <i class="fa fa-search ms-1"></i></strong> untuk mengisikan data secara otomatis.
                                     </div>
 
                                     <!-- Wrap in a wrapper if you want to allow multiple PNS in the future -->
@@ -242,8 +242,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="alert alert-warning mt-3">
-                                        <i class="fa fa-exclamation-triangle me-2"></i> Dengan menekan tombol Submit, Anda menyatakan bahwa seluruh data yang diisikan adalah benar dan dapat dipertanggungjawabkan.
+                                    <div class="alert alert-warning mt-3 p-3">
+                                        <i class="fa fa-exclamation-triangle me-2"></i> Klik tombol Lanjut ke pratinjau akhir untuk meninjau keseluruhan data dan memastikan semua data sudah benar.
                                     </div>
 
                                     <div class="d-flex justify-content-between mt-4">

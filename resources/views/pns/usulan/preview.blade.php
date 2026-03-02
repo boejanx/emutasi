@@ -116,7 +116,9 @@
                                 </table>
                             </div>
                         </div>
-
+                        <div class="alert alert-warning mt-3 p-3">
+                            <i class="fa fa-exclamation-triangle me-2"></i> Dengan menekan tombol Kirim Usulan ke BKPSDM, Anda menyatakan bahwa seluruh data yang diisikan adalah benar dan dapat dipertanggungjawabkan.
+                        </div>
                         <div class="d-flex justify-content-between mt-4 border-top pt-3">
                             <a href="{{ route('pns.usulan.edit', $usulan->id_usulan) }}" class="btn btn-secondary"><i class="fa fa-arrow-left me-2"></i> Kembali Edit Draft</a>
                             
