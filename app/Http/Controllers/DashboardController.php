@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use App\Models\Usulan;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\RefDokumen;
 
 class DashboardController extends Controller
 {
@@ -36,10 +38,10 @@ class DashboardController extends Controller
 
             // Query Data Bulanan Tahun Ini
             $currentYear = date('Y');
-            $monthlyStats = \Illuminate\Support\Facades\DB::table('tb_usulan')
-                ->select(\Illuminate\Support\Facades\DB::raw('MONTH(created_at) as month'), \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            $monthlyStats = DB::table('tb_usulan')
+                ->select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as total'))
                 ->whereYear('created_at', $currentYear)
-                ->groupBy(\Illuminate\Support\Facades\DB::raw('MONTH(created_at)'))
+                ->groupBy(DB::raw('MONTH(created_at)'))
                 ->get();
 
             // Isi array monthly_data dengan hasil query (month index dari 1..12 jadi dikurang 1)
@@ -57,7 +59,7 @@ class DashboardController extends Controller
                 ->latest()
                 ->first();
             $data['total_pengajuan'] = Usulan::where('id_user', $user->id)->count();
-            $data['dokumenSyarat']  = \App\Models\RefDokumen::where('status', 1)->get();
+            $data['dokumenSyarat']  = RefDokumen::where('status', 1)->get();
         } 
         // Khusus Admin Instansi (Role 2) langsung arahkan ke dashboard OPD
         elseif ($user->role == User::ROLE_ADMIN_INSTANSI) {

@@ -72,6 +72,15 @@
                                 </h2>
                                 <div id="pns-{{ $detail->id_detail }}" class="accordion-collapse collapse" data-bs-parent="#accordionTracking">
                                     <div class="accordion-body">
+                                        <table class="table table-sm table-borderless mb-3 border-bottom pb-2">
+                                            <tr><th width="35%" class="text-muted">Tempat, Tgl Lahir</th><td>: {{ $detail->tempat_lahir ?? '-' }}, {{ $detail->tanggal_lahir ?? '-' }}</td></tr>
+                                            <tr><th class="text-muted">Pangkat / Gol. Ruang</th><td>: {{ $detail->pangkat_akhir ?? '-' }} / {{ $detail->tmt_gol_akhir ?? '-' }}</td></tr>
+                                            <tr><th class="text-muted">Pendidikan Terakhir</th><td>: {{ $detail->pendidikan_terakhir_nama ?? '-' }}</td></tr>
+                                            <tr><th class="text-muted">Jabatan</th><td>: {{ $detail->jabatan_nama ?? $detail->jabatan }}</td></tr>
+                                            <tr><th class="text-muted">Unit Kerja Induk</th><td>: {{ $detail->unor_induk_nama ?? '-' }}</td></tr>
+                                            <tr><th class="text-muted">Unit Kerja Tujuan</th><td>: {{ $detail->lokasi_tujuan }}</td></tr>
+                                        </table>
+                                        <h6 class="fw-bold mb-2 small text-muted">Berkas Lampiran:</h6>
                                         <div class="row g-3">
                                             @foreach($detail->berkas as $berkas)
                                             <div class="col-md-6">

@@ -3,7 +3,25 @@
 
         <h1 class="h3 mb-3">AJUKAN MUTASI</h1>
 
-        @if($hasActiveUsulan)
+        @if($hasActiveDraft)
+            {{-- Ada Draft yang belum dikirim --}}
+            <div class="alert alert-secondary fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #6c757d;">
+                <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mb-3 mb-md-0 me-md-4 shadow-sm" style="width: 60px; height: 60px;">
+                        <i class="fa fa-file-alt fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h4 class="alert-heading fw-bold mb-1 text-dark">Draft Usulan Belum Dikirim</h4>
+                        <p class="mb-0 text-dark">Anda memiliki draft usulan yang belum selesai dilengkapi dan dikirim. Lanjutkan pengisian data Anda, atau hapus draft untuk membuat usulan baru.</p>
+                    </div>
+                    <div class="mt-3 mt-md-0 ms-md-4 flex-shrink-0">
+                        <a href="{{ route('pns.usulan.edit', $activeDraft->id_usulan) }}" class="btn btn-secondary shadow-sm fw-bold px-4 py-2" style="border-radius: 50px;">
+                            <i class="fa fa-pencil-alt me-2"></i> Lanjutkan Pengisian
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @elseif($hasActiveUsulan)
             @if($activeUsulan->status == 99)
                 <div class="alert alert-warning fade show p-4 shadow-sm" role="alert" style="border-left: 5px solid #ffc107;">
                     <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-start">
@@ -88,7 +106,11 @@
                         </table>
 
                         <div class="d-flex justify-content-end">
-                            @if($hasActiveUsulan)
+                            @if($hasActiveDraft)
+                                <a href="{{ route('pns.usulan.edit', $activeDraft->id_usulan) }}" class="btn btn-outline-secondary d-flex align-items-center px-4 py-2">
+                                    <i class="align-middle fa fa-pencil-alt me-2"></i> Lanjutkan Pengisian Draft
+                                </a>
+                            @elseif($hasActiveUsulan)
                                 <button class="btn btn-secondary d-flex align-items-center px-4 py-2" disabled style="cursor: not-allowed; opacity: 0.7;">
                                     <i class="align-middle fa fa-lock me-2"></i> Pengajuan Sedang Aktif
                                 </button>

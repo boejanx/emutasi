@@ -65,6 +65,14 @@ class OpdController extends Controller
             'details.*.siasn_id' => 'nullable|string',
             'details.*.unor_id_tujuan' => 'nullable|string',
             'details.*.nama_unor_tujuan' => 'nullable|string',
+            'details.*.tempat_lahir' => 'nullable|string',
+            'details.*.tanggal_lahir' => 'nullable|string',
+            'details.*.pangkat_akhir' => 'nullable|string',
+            'details.*.tmt_gol_akhir' => 'nullable|string',
+            'details.*.pendidikan_terakhir_nama' => 'nullable|string',
+            'details.*.jabatan_nama' => 'nullable|string',
+            'details.*.unor_nama' => 'nullable|string',
+            'details.*.unor_induk_nama' => 'nullable|string',
         ];
 
         // File validation rules for each PNS

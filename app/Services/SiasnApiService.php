@@ -58,6 +58,29 @@ class SiasnApiService
         }
     }
 
+    public function getReferensiJabatanFungsional()
+    {
+        try {
+            return $this->client->referensi()->jabatanFungsional(true)->get();
+        } catch (\Exception $e) {
+            Log::error('SIASN getReferensiJabatanFungsional Error', [
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    public function getReferensiJabatanPelaksana()
+    {
+        try {
+            return $this->client->referensi()->jabatanPelaksana(true)->get();
+        } catch (\Exception $e) {
+            Log::error('SIASN getReferensiJabatanPelaksana Error', [
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
     /**
      * Membuat data Unor Jabatan ke SIASN.
      * Menggunakan method createUnorJabatan milik SiasnClient.
@@ -72,6 +95,31 @@ class SiasnApiService
         } catch (\Exception $e) {
             Log::error('SIASN PostUnorJabatan Error', [
                 'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Membuat data Unor Jabatan dengan Dokumen ke SIASN.
+     * Menggunakan method createUnorJabatan lalu includeDokumen.
+     * 
+     * @param array $data payload request
+     * @param string $fileUrl URL/path dokumen (binary file bisa juga)
+     * @return array
+     */
+    public function postUnorJabatanWithDokumen(array $data, string $fileUrl)
+    {
+        try {
+            return $this->client->jabatan()
+                ->createUnorJabatan($data)
+                ->includeDokumen($fileUrl)
+                ->save();
+        } catch (\Exception $e) {
+            Log::error('SIASN PostUnorJabatanWithDokumen Error', [
+                'data' => $data,
+                'file_url' => $fileUrl,
                 'error' => $e->getMessage()
             ]);
             throw $e;

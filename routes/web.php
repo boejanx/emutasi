@@ -39,7 +39,16 @@ Route::get('/test-siasn/referensi/unor', function(\Illuminate\Http\Request $requ
         });
 
         $search = $request->query('q');
+        $atasanId = $request->query('atasan_id');
         $data = $response['data'] ?? [];
+
+        if ($atasanId) {
+            $data = array_filter($data, function($item) use ($atasanId) {
+                $parentId = $item['DiatasanId'] ?? $item['diatasanId'] ?? $item['IdUnorAtasan'] ?? $item['idUnorAtasan'] ?? '';
+                // Sometimes ID comes as string or int, so weak comparison or string cast
+                return (string)$parentId === (string)$atasanId;
+            });
+        }
 
         if ($search) {
             $data = array_filter($data, function($item) use ($search) {
@@ -71,6 +80,72 @@ Route::get('/test-siasn/referensi/unor', function(\Illuminate\Http\Request $requ
     }
 });
 
+// Rute untuk endpoint Select2 Referensi Jabatan Fungsional
+Route::get('/test-siasn/referensi/jabatan-fungsional', function(\Illuminate\Http\Request $request) {
+    try {
+        $response = \Illuminate\Support\Facades\Cache::remember('siasn_referensi_jft_data', 2592000, function () {
+            $siasnService = new \App\Services\SiasnApiService();
+            return $siasnService->getReferensiJabatanFungsional();
+        });
+
+        $search = $request->query('q');
+        $data = $response['data'] ?? [];
+
+        if ($search) {
+            $data = array_filter($data, function($item) use ($search) {
+                $name = $item['nama'] ?? '';
+                return stripos($name, $search) !== false;
+            });
+        }
+
+        $data = array_slice(array_values($data), 0, 50);
+
+        $results = array_map(function($item) {
+            return [
+                'id' => $item['id'] ?? '',
+                'text' => $item['nama'] ?? 'Unknown'
+            ];
+        }, $data);
+
+        return response()->json(['results' => $results]);
+    } catch (\Exception $e) {
+        return response()->json(['results' => [], 'error' => $e->getMessage()]);
+    }
+});
+
+// Rute untuk endpoint Select2 Referensi Jabatan Pelaksana (JFU)
+Route::get('/test-siasn/referensi/jabatan-pelaksana', function(\Illuminate\Http\Request $request) {
+    try {
+        $response = \Illuminate\Support\Facades\Cache::remember('siasn_referensi_jfu_data', 2592000, function () {
+            $siasnService = new \App\Services\SiasnApiService();
+            return $siasnService->getReferensiJabatanPelaksana();
+        });
+
+        $search = $request->query('q');
+        $data = $response['data'] ?? [];
+
+        if ($search) {
+            $data = array_filter($data, function($item) use ($search) {
+                $name = $item['nama'] ?? '';
+                return stripos($name, $search) !== false;
+            });
+        }
+
+        $data = array_slice(array_values($data), 0, 50);
+
+        $results = array_map(function($item) {
+            return [
+                'id' => $item['id'] ?? '',
+                'text' => $item['nama'] ?? 'Unknown'
+            ];
+        }, $data);
+
+        return response()->json(['results' => $results]);
+    } catch (\Exception $e) {
+        return response()->json(['results' => [], 'error' => $e->getMessage()]);
+    }
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -81,6 +156,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/pns', [\App\Http\Controllers\PnsController::class, 'index'])->name('pns.index');
         Route::get('/pns/usulan/create', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'create'])->name('pns.usulan.create');
         Route::post('/pns/usulan/upload-temp', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'uploadTemp'])->name('pns.usulan.uploadTemp');
+        
+        // Draft & Preview Routes
+        Route::post('/pns/usulan/draft', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'storeDraft'])->name('pns.usulan.storeDraft');
+        Route::get('/pns/usulan/{usulan}/edit', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'edit'])->name('pns.usulan.edit');
+        Route::put('/pns/usulan/{usulan}/draft', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'updateDraft'])->name('pns.usulan.updateDraft');
+        Route::get('/pns/usulan/{usulan}/preview', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'preview'])->name('pns.usulan.preview');
+        Route::post('/pns/usulan/{usulan}/submit', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'submit'])->name('pns.usulan.submit');
+        
         Route::post('/pns/usulan', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'store'])->name('pns.usulan.store');
         Route::post('/pns/usulan/revisi/{id_berkas}', [\App\Http\Controllers\Pns\AjukanMutasiController::class, 'revisiBerkas'])->name('pns.usulan.revisi');
         Route::get('/pns/tracking', [\App\Http\Controllers\PnsController::class, 'tracking'])->name('pns.tracking');
@@ -133,6 +216,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/bkpsdm/audit-trail', [\App\Http\Controllers\Admin\AuditTrailController::class, 'index'])->name('admin.audit-trail');
         Route::get('/bkpsdm/settings', function () {})->name('admin.settings');
         Route::post('/bkpsdm/siasn-sync/{id}', [\App\Http\Controllers\AdminController::class, 'syncSiasn'])->name('admin.siasn.sync');
+
+        // Manage Template SK
+        Route::resource('/bkpsdm/template-sk', \App\Http\Controllers\Admin\TemplateSkController::class)->names('admin.template-sk')->except(['show']);
+        
+        // Draft SK Actions
+        Route::post('/bkpsdm/usulan/{id}/draft-sk', [\App\Http\Controllers\AdminController::class, 'buatDraftSk'])->name('admin.draft-sk.buat');
+        Route::get('/bkpsdm/usulan/{id}/draft-sk/download', [\App\Http\Controllers\AdminController::class, 'unduhDraftSk'])->name('admin.draft-sk.unduh');
+        Route::delete('/bkpsdm/usulan/{id}/draft-sk', [\App\Http\Controllers\AdminController::class, 'hapusDraftSk'])->name('admin.draft-sk.hapus');
     });
 
     // ==========================================

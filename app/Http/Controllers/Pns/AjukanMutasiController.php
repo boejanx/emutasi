@@ -9,6 +9,8 @@ use App\Models\Usulan;
 use App\Models\RefDokumen;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
+
 
 class AjukanMutasiController extends Controller
 {
@@ -21,9 +23,10 @@ class AjukanMutasiController extends Controller
 
     public function create()
     {
-        // Status besides 4 (Selesai), 5 (SK Terbit), and 98 (Ditolak)
+        // Status 0 = Draft masih boleh diakses (tidak menghalangi)
+        // Yang menghalangi adalah usulan yang sudah dikirim: status 1-3, 99
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 98])
+            ->whereNotIn('status', [0, 4, 5, 98])
             ->exists();
 
         if ($activeUsulan) {
@@ -38,7 +41,7 @@ class AjukanMutasiController extends Controller
     {
         // Block submission if somehow user bypassed the UI button lock
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 98])
+            ->whereNotIn('status', [0, 4, 5, 98])
             ->exists();
 
         if ($activeUsulan) {
@@ -62,6 +65,14 @@ class AjukanMutasiController extends Controller
             'details.0.siasn_id' => 'nullable|string',
             'details.0.unor_id_tujuan' => 'nullable|string',
             'details.0.nama_unor_tujuan' => 'nullable|string',
+            'details.0.tempat_lahir' => 'nullable|string',
+            'details.0.tanggal_lahir' => 'nullable|string',
+            'details.0.pangkat_akhir' => 'nullable|string',
+            'details.0.tmt_gol_akhir' => 'nullable|string',
+            'details.0.pendidikan_terakhir_nama' => 'nullable|string',
+            'details.0.jabatan_nama' => 'nullable|string',
+            'details.0.unor_nama' => 'nullable|string',
+            'details.0.unor_induk_nama' => 'nullable|string',
         ];
 
         foreach ($dokumenSyarat as $dok) {
@@ -118,7 +129,7 @@ class AjukanMutasiController extends Controller
         try {
             DB::beginTransaction();
 
-            $berkas = \App\Models\UsulanBerkas::with(['detail.usulan', 'dokumen'])->findOrFail($id_berkas);
+            $berkas = UsulanBerkas::with(['detail.usulan', 'dokumen'])->findOrFail($id_berkas);
             
             // Store new file
             $path = $request->file('file_revisi')->store('berkas_mutasi', 'public');
@@ -187,6 +198,89 @@ class AjukanMutasiController extends Controller
                 'status' => 'error',
                 'message' => 'Gagal mengunggah dokumen sementara'
             ], 500);
+        }
+    }
+
+    public function storeDraft(StoreDraftRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->validated();
+            
+            // Build structure compatible with service
+            $data['details'] = $request->input('details') ?? [];
+            if (!empty($data['details'])) {
+                // append berkas
+                $dokumenSyarat = RefDokumen::where('status', 1)->get();
+                $berkas = [];
+                foreach ($dokumenSyarat as $dok) {
+                    $inputName = 'file_dokumen_temp_' . $dok->id_dokumen;
+                    if ($request->filled($inputName)) {
+                        $berkas[] = ['id_dokumen' => $dok->id_dokumen, 'path_dokumen' => $request->input($inputName)];
+                    }
+                }
+                $data['details'][0]['berkas'] = $berkas; // assuming single pns per usulan for pns role
+            }
+
+            $userId = auth()->id() ?? 1;
+            
+            $usulan = $this->usulanService->createDraft($data, $userId);
+
+            DB::commit();
+
+            if ($request->has('redirect_to_preview')) {
+                return redirect()->route('pns.usulan.preview', $usulan->id_usulan)->with('success', 'Draft berhasil disiapkan untuk pratinjau.');
+            }
+
+            return redirect()->route('pns.usulan.edit', $usulan->id_usulan)->with('success', 'Draft berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Gagal Simpan Draft', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function edit(Usulan $usulan)
+    {
+        Gate::authorize('update', $usulan); // Assuming Policy is registered
+        
+        $dokumenSyarat = RefDokumen::where('status', 1)->get();
+        return view('pns.usulan.edit', compact('usulan', 'dokumenSyarat'));
+    }
+
+    public function updateDraft(UpdateDraftRequest $request, Usulan $usulan)
+    {
+        Gate::authorize('update', $usulan);
+
+        try {
+            $this->usulanService->updateDraft($usulan, $request->validated());
+            return redirect()->back()->with('success', 'Draft berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui draft: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function preview(Usulan $usulan)
+    {
+        Gate::authorize('submit', $usulan);
+        
+        $dokumenSyarat = RefDokumen::where('status', 1)->get();
+        $eligibility = $this->usulanService->checkEligibilityForSubmit($usulan);
+        $isEligible = $eligibility['isEligible'];
+        $errors = $eligibility['errors'];
+
+        return view('pns.usulan.preview', compact('usulan', 'isEligible', 'errors', 'dokumenSyarat'));
+    }
+
+    public function submit(SubmitUsulanRequest $request, Usulan $usulan)
+    {
+        Gate::authorize('submit', $usulan);
+
+        try {
+            $this->usulanService->commitSubmission($usulan);
+            return redirect()->route('pns.index')->with('success', 'Usulan berhasil dikirim ke BKPSDM!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

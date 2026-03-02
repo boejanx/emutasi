@@ -163,6 +163,11 @@
                             <i class="align-middle fa fa-folder-open"></i> <span class="align-middle">Berkas Persyaratan</span>
                         </a>
                     </li>
+                    <li class="sidebar-item {{ request()->routeIs('admin.template-sk.index') ? 'active' : '' }}">
+                        <a class="sidebar-link" href="{{ route('admin.template-sk.index') }}">
+                            <i class="align-middle fa fa-file-word"></i> <span class="align-middle">Template SK</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item {{ request()->routeIs('admin.audit-trail') ? 'active' : '' }}">
                         <a class="sidebar-link" href="{{ route('admin.audit-trail') }}">
                             <i class="align-middle fa fa-shield-alt"></i> <span class="align-middle">Audit Log Sistem</span>

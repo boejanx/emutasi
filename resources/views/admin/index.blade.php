@@ -54,11 +54,35 @@
                                         </td>
                                         <td>
                                             @if($usulan->status == 4)
-                                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#modalUploadSK-{{ $usulan->id_usulan }}">
-                                                    <i class="fa fa-upload"></i> Upload SK Mutasi
-                                                </button>
+                                                @if(empty($usulan->draft_sk_path))
+                                                    <button type="button" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBuatDraftSK-{{ $usulan->id_usulan }}">
+                                                        <i class="fa fa-file-word"></i> Buat Draft SK
+                                                    </button>
+                                                @else
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-secondary dropdown-toggle rounded-pill shadow-sm" type="button" id="dropdownDraft-{{ $usulan->id_usulan }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Aksi Draft SK
+                                                        </button>
+                                                        <ul class="dropdown-menu border-0 shadow-sm" aria-labelledby="dropdownDraft-{{ $usulan->id_usulan }}">
+                                                            <li><a class="dropdown-item text-primary fw-bold" href="{{ route('admin.draft-sk.unduh', $usulan->id_usulan) }}"><i class="fa fa-download me-2"></i> Unduh Draft SK</a></li>
+                                                            <li>
+                                                                <a href="#" class="dropdown-item text-info fw-bold" data-bs-toggle="modal" data-bs-target="#modalBuatDraftSK-{{ $usulan->id_usulan }}"><i class="fa fa-sync me-2"></i> Buat Ulang Draft SK</a>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <a href="#" class="dropdown-item text-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalUploadSK-{{ $usulan->id_usulan }}"><i class="fa fa-upload me-2"></i> Upload SK Final</a>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <form action="{{ route('admin.draft-sk.hapus', $usulan->id_usulan) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus draft SK ini?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="dropdown-item text-danger fw-bold"><i class="fa fa-trash me-2"></i> Hapus Draft SK</button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                @endif
                                             @else
                                                 <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm btn-disposisi" 
                                                     data-bs-toggle="modal" 
@@ -265,6 +289,72 @@
     </div>
     @endforeach
 
+    {{-- Modal Buat Draft SK --}}
+    @foreach($usulans as $usulan)
+        @if($usulan->status == 4)
+        <div class="modal fade" id="modalBuatDraftSK-{{ $usulan->id_usulan }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <form action="{{ route('admin.draft-sk.buat', $usulan->id_usulan) }}" method="POST">
+                        @csrf
+                        <div class="modal-header bg-info">
+                            <h5 class="modal-title h4 text-white"><i class="align-middle me-2" data-feather="file-text"></i> Buat Draft SK</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body m-3">
+                            <p class="mb-3">Silakan pilih template SK MS Word yang akan digunakan untuk me-generate draft SK Mutasi.</p>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Pilih Template SK <span class="text-danger">*</span></label>
+                                <select name="template_id" class="form-select" required>
+                                    <option value="">-- Pilih Template --</option>
+                                    @foreach($templates ?? [] as $tpl)
+                                        <option value="{{ $tpl->id }}">{{ $tpl->nama_template }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Penempatan Sub UNOR (Khusus SK) <span class="text-danger">*</span></label>
+                                <select name="sub_unor_id" class="form-select select2-sub-unor" data-atasan-id="{{ $usulan->details->first()->unor_id_tujuan ?? '' }}" style="width: 100%;" required>
+                                    <option value="">-- Ketik Nama Sub UNOR --</option>
+                                </select>
+                                <input type="hidden" name="sub_unor_nama" class="sub-unor-nama-input">
+                                <small class="text-muted d-block mt-1">Hanya menampilkan Sub UNOR dari unit: <strong>{{ $usulan->details->first()->nama_unor_tujuan ?? '-' }}</strong></small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Jenis Jabatan Baru <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-3 mt-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input radio-jenis-jabatan" type="radio" name="jenis_jabatan_baru" id="jenis_jft_{{ $usulan->id_usulan }}" value="jft" required>
+                                        <label class="form-check-label" for="jenis_jft_{{ $usulan->id_usulan }}">Jabatan Fungsional Tertentu (JFT)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input radio-jenis-jabatan" type="radio" name="jenis_jabatan_baru" id="jenis_jfu_{{ $usulan->id_usulan }}" value="jfu" required>
+                                        <label class="form-check-label" for="jenis_jfu_{{ $usulan->id_usulan }}">Jabatan Pelaksana (JFU)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 wrapper-jabatan-baru" style="display: none;">
+                                <label class="form-label fw-bold">Pilih Jabatan Baru <span class="text-danger">*</span></label>
+                                <select name="jabatan_baru_id" class="form-select select2-jabatan-baru" style="width: 100%;" disabled required>
+                                    <option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>
+                                </select>
+                                <input type="hidden" name="jabatan_baru_nama" class="jabatan-baru-nama-input">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-info text-white">Generate Draft</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endif
+    @endforeach
+
     {{-- Modal Upload SK Mutasi --}}
     @foreach($usulans as $usulan)
         @if($usulan->status == 4)
@@ -330,6 +420,12 @@
         .custom-radio-box input[type="radio"]:checked + label span.text-dark {
             color: #3b7ddd !important;
     </style>
+
+    <!-- Load jQuery & Select2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -464,6 +560,90 @@
                         targetRow.classList.add('show');
                         this.innerHTML = '<i class="fa fa-eye-slash"></i> Tutup Dokumen';
                         this.classList.replace('btn-info', 'btn-secondary');
+                    }
+                });
+            });
+
+            // Init Select2 for sub unor in Buat Draft SK modal
+            $('.select2-sub-unor').each(function() {
+                var atasanId = $(this).data('atasan-id');
+                var hiddenInput = $(this).closest('.mb-3').find('.sub-unor-nama-input');
+                
+                $(this).select2({
+                    theme: 'bootstrap-5',
+                    placeholder: "-- Ketik Nama Sub UNOR --",
+                    dropdownParent: $(this).parent(),
+                    minimumInputLength: 3,
+                    ajax: {
+                        url: '/test-siasn/referensi/unor',
+                        dataType: 'json',
+                        delay: 500,
+                        data: function (params) {
+                            return {
+                                q: params.term,
+                                atasan_id: atasanId
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.results
+                            };
+                        },
+                        cache: true
+                    }
+                }).on('change', function() {
+                    const selData = $(this).select2('data');
+                    if (selData && selData.length > 0) {
+                        hiddenInput.val(selData[0].text);
+                    }
+                });
+            });
+
+            // Handle Jenis Jabatan Baru Radio Change
+            $('.radio-jenis-jabatan').on('change', function() {
+                var modal = $(this).closest('.modal-content');
+                var wrapper = modal.find('.wrapper-jabatan-baru');
+                var select2Jabatan = modal.find('.select2-jabatan-baru');
+                var hiddenJabatanNama = modal.find('.jabatan-baru-nama-input');
+                var jenis = $(this).val();
+                
+                wrapper.show();
+                select2Jabatan.prop('disabled', false);
+                
+                // Hapus instance Select2 lama jika ada
+                if (select2Jabatan.hasClass("select2-hidden-accessible")) {
+                    select2Jabatan.select2('destroy');
+                }
+                select2Jabatan.empty().append('<option value="">-- Ketik Nama Jabatan --</option>');
+                hiddenJabatanNama.val('');
+                
+                var ajaxUrl = jenis === 'jft' ? '/test-siasn/referensi/jabatan-fungsional' : '/test-siasn/referensi/jabatan-pelaksana';
+                
+                select2Jabatan.select2({
+                    theme: 'bootstrap-5',
+                    placeholder: "-- Ketik Nama Jabatan --",
+                    dropdownParent: wrapper,
+                    minimumInputLength: 3,
+                    ajax: {
+                        url: ajaxUrl,
+                        dataType: 'json',
+                        delay: 500,
+                        data: function (params) {
+                            return {
+                                q: params.term
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.results
+                            };
+                        },
+                        cache: true
+                    }
+                }).on('change', function() {
+                    const selData = $(this).select2('data');
+                    if (selData && selData.length > 0) {
+                        hiddenJabatanNama.val(selData[0].text);
                     }
                 });
             });

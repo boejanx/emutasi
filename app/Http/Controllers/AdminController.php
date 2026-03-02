@@ -5,6 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usulan;
 use App\Services\UsulanService;
+use App\Services\SiasnApiService;
+use App\Models\SiasnUnorJabatan;
+use App\Models\SiasnJabatan;
+use App\Models\SiasnJabatanFungsional;
+use App\Models\SiasnJabatanPelaksana;
+use Illuminate\Support\Facades\Log;
+use App\Models\TemplateSk;
+use PhpOffice\PhpWord\Settings;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+
 
 class AdminController extends Controller
 {
@@ -27,14 +41,16 @@ class AdminController extends Controller
         ->where('disposisi', '=', 2) // Disposisi 2 is for Staf Teknis / Admin
         ->latest()->get();
         
-        return view('admin.index', compact('usulans'));
+        $templates = TemplateSk::where('is_active', true)->get();
+
+        return view('admin.index', compact('usulans', 'templates'));
     }
 
     public function riwayat()
     {
         // Show Usulan that Admin has finished processing (disposisi >= 3 or status > 3)
         // Or whatever defines "riwayat" for admin
-        $usulans = Usulan::with(['user', 'details.berkas.dokumen', 'logs' => function($query) {
+        $usulans = Usulan::with(['user', 'details.berkas.dokumen', 'siasnUnorJabatan', 'logs' => function($query) {
             $query->orderBy('created_at', 'asc');
         }, 'logs.user'])
         ->where(function($query) {
@@ -134,7 +150,7 @@ class AdminController extends Controller
             // Persiapkan draft SIASN
             if ($usulan->details && $usulan->details->count() > 0) {
                 $detail = $usulan->details->first();
-                \App\Models\SiasnUnorJabatan::updateOrCreate(
+                SiasnUnorJabatan::updateOrCreate(
                     ['id_usulan' => $usulan->id_usulan],
                     [
                         'nip'            => $detail->nip,
@@ -160,7 +176,7 @@ class AdminController extends Controller
             return back()->with('success', 'SK Mutasi berhasil diunggah! Usulan telah selesai.');
             
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Gagal Upload SK', ['error' => $e->getMessage()]);
+            Log::error('Gagal Upload SK', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal mengunggah SK: ' . $e->getMessage());
         }
     }
@@ -179,43 +195,78 @@ class AdminController extends Controller
         }
 
         try {
-            $siasnService = new \App\Services\SiasnApiService();
+            $siasnService = new SiasnApiService();
             
-            // 1. Dapatkan PNS Id dan data lain dari API Data Utama SIASN (agar real-time dan akurat)
-            $pnsDataRes = $siasnService->getDataUtama($siasnData->nip);
-            $pnsUtama = $pnsDataRes['data'] ?? [];
-
-            if (empty($pnsUtama) || empty($pnsUtama['id'])) {
-                throw new \Exception('Data Utama PNS dengan NIP tersebut tidak ditemukan di BKN.');
+            $detail = $usulan->details->first();
+            
+            if (!$detail) {
+                throw new \Exception('Data detail usulan tidak ditemukan.');
             }
 
-            // 2. Persiapkan payload mapping
-            // Catatan: Payload mungkin membutuhkan field yang lebih detail (instansiId, jabatanFungsional dll) 
-            // Apabila null, SIASN biasanya menghiraukan, atau default sesuai referensi if applicable.
+            $jabatanFungsionalId = '';
+            $jabatanFungsionalUmumId = '';
+            
+            if ($detail->jenis_jabatan_baru === 'jft') {
+                $jabatanFungsionalId = $detail->jabatan_baru_id;
+            } elseif ($detail->jenis_jabatan_baru === 'jfu') {
+                $jabatanFungsionalUmumId = $detail->jabatan_baru_id;
+            } else {
+                $jabatanFungsionalId = $siasnData->jabatan_fungsional_id ?? '';
+                $jabatanFungsionalUmumId = $siasnData->jabatan_fungsional_umum_id ?? '';
+            }
+            
+            $unorIdToPost = $detail->sub_unor_id;
+
             $payload = [
-                'pnsId'          => $pnsUtama['id'],
-                'unorId'         => $siasnData->unor_id,
-                'eselonId'       => $siasnData->eselon_id ?? '',
-                'jabatanFungsionalId'     => $siasnData->jabatan_fungsional_id ?? '',
-                'jabatanFungsionalUmumId' => $siasnData->jabatan_fungsional_umum_id ?? '',
-                'instansiId'              => $siasnData->instansi_id ?? $pnsUtama['instansiKerjaId'] ?? '',
-                'satuanKerjaId'           => $siasnData->satuan_kerja_id ?? '',
-                'tmtJabatan'              => date('d-m-Y', strtotime($siasnData->tmt_jabatan)), // Format BKN: d-m-Y (biasanya)
-                'tmtPelantikan'           => date('d-m-Y', strtotime($siasnData->tmt_pelantikan)),
-                'nomorSk'                 => $siasnData->nomor_sk,
-                'tanggalSk'               => date('d-m-Y', strtotime($siasnData->tanggal_sk)),
+                'id'                        => null,
+                'pnsId'                     => $detail->pns_id ?? ($detail->siasn_id ?? $siasnData->pns_id),
+                'unorId'                    => $unorIdToPost,
+                'eselonId'                  => null,
+                'jabatanFungsionalId'       => $jabatanFungsionalId,
+                'subJabatanId'              => null,
+                'jabatanFungsionalUmumId'   => $jabatanFungsionalUmumId,
+                'instansiId'                => 'A5EB03E241F4F6A0E040640A040252AD',
+                'instansiIndukId'           => 'A5EB03E241F4F6A0E040640A040252AD',
+                'satuanKerjaId'             => 'A5EB03E241F4F6A0E040640A040252AD',
+                'tmtJabatan'                => date('d-m-Y', strtotime($siasnData->tmt_jabatan)), 
+                'tmtPelantikan'             => date('d-m-Y', strtotime($siasnData->tmt_pelantikan)),
+                'tmtMutasi'                 => date('d-m-Y', strtotime($siasnData->tmt_jabatan)),
+                'nomorSk'                   => $siasnData->nomor_sk,
+                'tanggalSk'                 => date('d-m-Y', strtotime($siasnData->tanggal_sk)),
+                'jenisMutasiId'             => 'MU', // Mutasi Jabatan
+                'jenisPenugasanId'          => null,
+                'jenisJabatan'              => ($detail->jenis_jabatan_baru === 'jft') ? '2' : (($detail->jenis_jabatan_baru === 'jfu') ? '4'  : '1'),
             ];
 
-            // 3. Post data
-            $response = $siasnService->postUnorJabatan($payload);
+            // Setup Dokumen / File Path for includeDokumen
+            $skUrl = null;
+            if ($usulan->path_sk) {
+                $skUrl = storage_path('app/public/' . $usulan->path_sk);
+            }
 
+            // 3. Post data ke SIASN
+            if ($skUrl) {
+                $response = $siasnService->postUnorJabatanWithDokumen($payload, $skUrl);
+            } else {
+                $response = $siasnService->postUnorJabatan($payload);
+            }
+
+            $rwJabatanId = $response['data']['rwJabatanId'] ?? ($response['mapData']['rwJabatanId'] ?? '');
+            
             // 4. Update tabel setelah status sukses (Dapat id riwayat)
             $siasnData->update([
                 'is_sync' => true,
-                'pns_id'  => $pnsUtama['id'],
-                'id_riwayat_jabatan_siasn' => $response['data']['rwJabatanId'] ?? ($response['mapData']['rwJabatanId'] ?? ''),
+                'pns_id'  => $detail->pns_id ?? ($detail->siasn_id ?? $siasnData->pns_id),
+                'id_riwayat_jabatan_siasn' => $rwJabatanId,
                 'sync_response' => $response
             ]);
+
+            // Assign the SIASN response id to detail's siasn_id mapping
+            if ($detail) {
+                $detail->update([
+                    'siasn_id' => $rwJabatanId
+                ]);
+            }
 
             $this->usulanService->logUsulan(
                 $usulan->id_usulan,
@@ -228,7 +279,7 @@ class AdminController extends Controller
             return back()->with('success', 'Berhasil melakukan sinkronisasi dengan BKN (SIASN) !');
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('SIASN Sync Error', ['usulan_id' => $id, 'error' => $e->getMessage()]);
+            Log::error('SIASN Sync Error', ['usulan_id' => $id, 'error' => $e->getMessage()]);
             
             // Track failure string for debugging
             if (isset($siasnData)) {
@@ -239,5 +290,126 @@ class AdminController extends Controller
             
             return back()->with('error', 'Gagal tersinkronisasi ke SIASN BKN: ' . $e->getMessage());
         }
+    }
+
+    public function buatDraftSk(Request $request, $id)
+    {
+        $request->validate([
+            'template_id' => 'required|exists:template_sks,id',
+            'sub_unor_id' => 'required|string',
+            'sub_unor_nama' => 'required|string',
+            'jenis_jabatan_baru' => 'required|string|in:jft,jfu',
+            'jabatan_baru_id' => 'required|string',
+            'jabatan_baru_nama' => 'required|string'
+        ]);
+
+        $usulan = Usulan::with(['user', 'details'])->findOrFail($id);
+        $template = TemplateSk::findOrFail($request->template_id);
+
+        try {
+            $templatePath = storage_path('app/public/' . $template->file_path);
+            
+            if (!file_exists($templatePath)) {
+                return back()->with('error', 'File template fisik tidak ditemukan di server.');
+            }
+
+            Settings::setOutputEscapingEnabled(true);
+            $templateProcessor = new TemplateProcessor($templatePath);
+            
+            $detail = $usulan->details->first();
+            
+            // Simpan riwayat inputan modal ke tabel UsulanDetail agar bisa digunakan pada saat sync SK Final
+            if ($detail) {
+                $detail->update([
+                    'jenis_jabatan_baru' => $request->jenis_jabatan_baru,
+                    'jabatan_baru_id' => $request->jabatan_baru_id,
+                    'jabatan_baru_nama' => $request->jabatan_baru_nama,
+                    'sub_unor_id' => $request->sub_unor_id,
+                    'sub_unor_nama' => $request->sub_unor_nama,
+                ]);
+            }
+
+            // Format tanggal jika dimungkinkan
+            $tgl_lahir = $detail->tanggal_lahir ? (Carbon::hasFormat($detail->tanggal_lahir, 'd-m-Y') ? Carbon::createFromFormat('d-m-Y', $detail->tanggal_lahir)->translatedFormat('d F Y') : (Carbon::hasFormat($detail->tanggal_lahir, 'Y-m-d') ? Carbon::parse($detail->tanggal_lahir)->translatedFormat('d F Y') : $detail->tanggal_lahir)) : '-';
+            
+            $tmt_gol = $detail->tmt_gol_akhir ? (Carbon::hasFormat($detail->tmt_gol_akhir, 'd-m-Y') ? Carbon::createFromFormat('d-m-Y', $detail->tmt_gol_akhir)->translatedFormat('d F Y') : (Carbon::hasFormat($detail->tmt_gol_akhir, 'Y-m-d') ? Carbon::parse($detail->tmt_gol_akhir)->translatedFormat('d F Y') : $detail->tmt_gol_akhir)) : '-';
+            
+            $templateProcessor->setValue('no_urut', '1');
+            $templateProcessor->setValue('no_surat', $usulan->no_surat ?? '-');
+            $templateProcessor->setValue('nama_pns', $detail->nama ?? '-');
+            $templateProcessor->setValue('nip', $detail->nip ?? '-');
+            $templateProcessor->setValue('tempat_lahir', $detail->tempat_lahir ?? '-');
+            $templateProcessor->setValue('tanggal_lahir', $tgl_lahir);
+            
+            // Pangkat dan Golongan kini sudah terpisah langsung dari API SIASN:
+            // "pangkat_akhir" (Misal: "Pembina"), "gol_ruang_akhir" (Misal: "IV/a")
+            $pangkat = $detail->pangkat_akhir ?? '-';
+            // Jika kosong, sediakan fallback
+            $gol = $detail->gol_ruang_akhir ?? '-';
+
+            $templateProcessor->setValue('pangkat', $pangkat);
+            $templateProcessor->setValue('gol', $gol);
+            $templateProcessor->setValue('tmt_gol', $tmt_gol);
+            
+            $templateProcessor->setValue('pendidikan', $detail->pendidikan_terakhir_nama ?? '-');
+            $templateProcessor->setValue('jabatan', $detail->jabatan_nama ?? $detail->jabatan ?? '-');
+            $templateProcessor->setValue('unit_kerja', $detail->unor_induk_nama ?? $detail->lokasi_awal ?? '-');
+            
+            // Jabatan baru asumsi sama, unor_baru menggunakan sub unor yang dipilih dari modal
+            // Jika untuk alasan tertentu sub unor kosong (fallback), kembali ke unor_tujuan asal
+            $templateProcessor->setValue('jabatan_baru', $request->jabatan_baru_nama ?? $detail->jabatan_nama ?? $detail->jabatan ?? '-');
+            $templateProcessor->setValue('sub_unor_baru', $request->sub_unor_nama ?? $detail->nama_unor_tujuan ?? '-');
+            $templateProcessor->setValue('unor_baru', $request->unor_nama ?? $detail->nama_unor_tujuan ?? '-');
+
+            
+            // Tanggal SK
+            \Carbon\Carbon::setLocale('id');
+            $templateProcessor->setValue('tanggal_sk', \Carbon\Carbon::now()->translatedFormat('d F Y'));
+            
+            $filename = 'draft_sk_' . $usulan->id_usulan . '_' . time() . '.docx';
+            $outputPath = storage_path('app/public/draft_sks/' . $filename);
+
+            if (!file_exists(storage_path('app/public/draft_sks'))) {
+                mkdir(storage_path('app/public/draft_sks'), 0755, true);
+            }
+
+            $templateProcessor->saveAs($outputPath);
+            
+            // Delete old draft if exists
+            if ($usulan->draft_sk_path && Storage::disk('public')->exists($usulan->draft_sk_path)) {
+                Storage::disk('public')->delete($usulan->draft_sk_path);
+            }
+
+            $usulan->update([
+                'draft_sk_path' => 'draft_sks/' . $filename
+            ]);
+
+            return back()->with('success', 'Draft SK berhasil dibuat dan siap diunduh.');
+
+        } catch (\Exception $e) {
+            Log::error('Draft SK Error', ['msg' => $e->getMessage()]);
+            return back()->with('error', 'Gagal membuat draft SK: ' . $e->getMessage());
+        }
+    }
+
+    public function unduhDraftSk($id)
+    {
+        $usulan = Usulan::findOrFail($id);
+        if (!$usulan->draft_sk_path || !Storage::disk('public')->exists($usulan->draft_sk_path)) {
+            return back()->with('error', 'Draft SK tidak ditemukan.');
+        }
+
+        return Storage::disk('public')->download($usulan->draft_sk_path);
+    }
+
+    public function hapusDraftSk($id)
+    {
+        $usulan = Usulan::findOrFail($id);
+        if ($usulan->draft_sk_path && Storage::disk('public')->exists($usulan->draft_sk_path)) {
+            Storage::disk('public')->delete($usulan->draft_sk_path);
+        }
+
+        $usulan->update(['draft_sk_path' => null]);
+        return back()->with('success', 'Draft SK berhasil dihapus. Anda dapat membuat draft baru.');
     }
 }

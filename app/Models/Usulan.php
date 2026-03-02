@@ -27,6 +27,13 @@ class Usulan extends Model
         'id_user',
         'status',
         'disposisi',
+        'submitted_at',
+        'draft_sk_path',
+    ];
+
+    protected $casts = [
+        'tanggal_surat' => 'date',
+        'submitted_at' => 'datetime',
     ];
 
     protected static function boot()

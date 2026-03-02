@@ -30,7 +30,9 @@
                                     </td>
                                     <td>{{ $usulan->perihal }}</td>
                                     <td>
-                                        @if($usulan->status == 98)
+                                        @if($usulan->status == 0)
+                                            <span class="badge bg-secondary"><i class="fa fa-file-alt me-1"></i> Draft</span>
+                                        @elseif($usulan->status == 98)
                                             <span class="badge bg-danger">Ditolak Permanen</span>
                                         @elseif($usulan->status == 99)
                                             <span class="badge bg-warning text-dark"><i class="fa fa-exclamation-triangle"></i> Perlu Revisi</span>
@@ -46,9 +48,15 @@
                                     </td>
                                     <td>{{ $usulan->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <a href="{{ route('pns.tracking.detail', $usulan->id_usulan) }}" class="btn btn-sm btn-info border-0 rounded-pill px-3 shadow-sm text-white">
-                                            <i class="fa fa-eye"></i> Detail
-                                        </a>
+                                        @if($usulan->status == 0)
+                                            <a href="{{ route('pns.usulan.edit', $usulan->id_usulan) }}" class="btn btn-sm btn-secondary border-0 rounded-pill px-3 shadow-sm text-white">
+                                                <i class="fa fa-pencil-alt"></i> Lanjutkan Pengisian
+                                            </a>
+                                        @else
+                                            <a href="{{ route('pns.tracking.detail', $usulan->id_usulan) }}" class="btn btn-sm btn-info border-0 rounded-pill px-3 shadow-sm text-white">
+                                                <i class="fa fa-eye"></i> Detail
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty

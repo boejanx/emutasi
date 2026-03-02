@@ -7,8 +7,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title">Formulir Pengajuan Usulan Mutasi PNS</h5>
-                        <h6 class="card-subtitle text-muted">Lengkapi data di bawah ini secara bertahap.</h6>
+                        <h5 class="card-title">Edit Draft Usulan Mutasi PNS</h5>
+                        <h6 class="card-subtitle text-muted">Lengkapi data draft Anda sebelum dikirim.</h6>
                     </div>
                     
                     <div class="card-body">
@@ -36,8 +36,9 @@
                             </li>
                         </ul>
 
-                        <form id="formUsulan" action="{{ route('pns.usulan.store') }}" method="POST" enctype="multipart/form-data">
+                        <form id="formUsulan" action="{{ route('pns.usulan.updateDraft', $usulan->id_usulan) }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            @method('PUT')
                             <div class="tab-content" id="myTabContent">
                                 
                                 <!-- STEP 1: Surat Usulan -->
@@ -46,19 +47,19 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label">Nomor Surat <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="no_surat" id="no_surat" placeholder="Masukkan Nomor Surat Pengantar" required>
+                                        <input type="text" class="form-control" name="no_surat" id="no_surat" value="{{ $usulan->no_surat }}" placeholder="Masukkan Nomor Surat Pengantar" required>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Tanggal Surat <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="tanggal_surat" id="tanggal_surat" placeholder="Pilih Tanggal ..." required>
+                                        <input type="text" class="form-control" name="tanggal_surat" id="tanggal_surat" value="{{ $usulan->tanggal_surat ? $usulan->tanggal_surat->format('Y-m-d') : '' }}" placeholder="Pilih Tanggal ..." required>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Perihal Surat <span class="text-danger">*</span></label>
-                                        <textarea class="form-control" name="perihal" id="perihal" rows="3" placeholder="Contoh: Permohonan Pindah Wilayah Kerja an. John Doe" required></textarea>
+                                        <textarea class="form-control" name="perihal" id="perihal" rows="3" placeholder="Contoh: Permohonan Pindah Wilayah Kerja an. John Doe" required>{{ $usulan->perihal }}</textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">No. WhatsApp Pengusul <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" name="no_whatsapp" id="no_whatsapp" placeholder="Contoh: 081234567890" required>
+                                        <input type="text" class="form-control" name="no_whatsapp" id="no_whatsapp" value="{{ $usulan->no_whatsapp }}" placeholder="Contoh: 081234567890" required>
                                         <small class="text-muted">Nomor ini akan digunakan untuk mengirim notifikasi progres usulan mutasi.</small>
                                     </div>
                                     
@@ -77,45 +78,60 @@
 
                                     <!-- Wrap in a wrapper if you want to allow multiple PNS in the future -->
                                     <div class="pns-wrapper border p-3 rounded bg-light mb-3">
+                                            @php
+                                                $detail = $usulan->details->first() ?? (object)[
+                                                    'nip' => Auth::user()->email,
+                                                    'nama' => Auth::user()->name,
+                                                    'siasn_id' => '', 'siasn_nip_baru' => '', 'unor_induk_nama' => '',
+                                                    'jabatan' => '', 'lokasi_awal' => '', 'lokasi_tujuan' => '',
+                                                    'unor_id_tujuan' => '', 'nama_unor_tujuan' => ''
+                                                ];
+                                            @endphp
+
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">NIP <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control bg-light" name="details[0][nip]" id="nip_pns" placeholder="NIP 18 Digit" value="{{ Auth::user()->email }}" readonly required>
+                                                    <input type="text" class="form-control bg-light" name="details[0][nip]" id="nip_pns" placeholder="NIP 18 Digit" value="{{ $detail->nip }}" readonly required>
                                                     <button class="btn btn-outline-primary" type="button" id="btn-get-siasn">Get Data <i class="fa fa-search ms-1"></i></button>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control bg-light" name="details[0][nama]" id="nama_pns" placeholder="Nama tanpa gelar" value="{{ Auth::user()->name }}" readonly required>
+                                                <input type="text" class="form-control bg-light" name="details[0][nama]" id="nama_pns" placeholder="Nama tanpa gelar" value="{{ $detail->nama }}" readonly required>
                                             </div>
 
-                                            <input type="hidden" name="details[0][siasn_id]" id="siasn_id">
-                                            <input type="hidden" name="details[0][siasn_nip_baru]" id="siasn_nip_baru">
-                                            <input type="hidden" name="details[0][unor_induk_nama]" id="unor_induk_nama">
-                                            <input type="hidden" name="details[0][tempat_lahir]" id="tempat_lahir">
-                                            <input type="hidden" name="details[0][tanggal_lahir]" id="tanggal_lahir">
-                                            <input type="hidden" name="details[0][pangkat_akhir]" id="pangkat_akhir">
-                                            <input type="hidden" name="details[0][tmt_gol_akhir]" id="tmt_gol_akhir">
-                                            <input type="hidden" name="details[0][pendidikan_terakhir_nama]" id="pendidikan_terakhir_nama">
-                                            <input type="hidden" name="details[0][jabatan_nama]" id="jabatan_nama">
-                                            <input type="hidden" name="details[0][unor_nama]" id="unor_nama">
+                                            <input type="hidden" name="details[0][siasn_id]" id="siasn_id" value="{{ $detail->siasn_id }}">
+                                            <input type="hidden" name="details[0][siasn_nip_baru]" id="siasn_nip_baru" >
+                                            <input type="hidden" name="details[0][unor_induk_nama]" id="unor_induk_nama" value="{{ $detail->unor_induk_nama ?? '' }}">
+                                            <input type="hidden" name="details[0][tempat_lahir]" id="tempat_lahir" value="{{ $detail->tempat_lahir ?? '' }}">
+                                            <input type="hidden" name="details[0][tanggal_lahir]" id="tanggal_lahir" value="{{ $detail->tanggal_lahir ?? '' }}">
+                                            <input type="hidden" name="details[0][pangkat_akhir]" id="pangkat_akhir" value="{{ $detail->pangkat_akhir ?? '' }}">
+                                            <input type="hidden" name="details[0][gol_ruang_akhir]" id="gol_ruang_akhir" value="{{ $detail->gol_ruang_akhir ?? '' }}">
+                                            <input type="hidden" name="details[0][tmt_gol_akhir]" id="tmt_gol_akhir" value="{{ $detail->tmt_gol_akhir ?? '' }}">
+                                            <input type="hidden" name="details[0][pendidikan_terakhir_nama]" id="pendidikan_terakhir_nama" value="{{ $detail->pendidikan_terakhir_nama ?? '' }}">
+                                            <input type="hidden" name="details[0][jabatan_nama]" id="jabatan_nama" value="{{ $detail->jabatan_nama ?? '' }}">
+                                            <input type="hidden" name="details[0][unor_nama]" id="unor_nama" value="{{ $detail->unor_nama ?? '' }}">
 
                                             <div class="col-md-12 mb-3">
                                                 <label class="form-label">Jabatan Saat Ini <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control bg-light" name="details[0][jabatan]" id="jabatan_pns" placeholder="Contoh: Guru Ahli Pertama" readonly required>
+                                                <input type="text" class="form-control bg-light" name="details[0][jabatan]" id="jabatan_pns" value="{{ $detail->jabatan }}" placeholder="Contoh: Guru Ahli Pertama" readonly required>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Lokasi Kerja Awal (Saat Ini) <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" name="details[0][lokasi_awal]" id="lokasi_awal" placeholder="Contoh: SMPN 1 Kedungwuni" required>
+                                                <input type="text" class="form-control" name="details[0][lokasi_awal]" id="lokasi_awal" value="{{ $detail->lokasi_awal }}" placeholder="Contoh: SMPN 1 Kedungwuni" required>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <select class="form-select select2" id="select_lokasi_tujuan" required>
-                                                    <option value="">-- Ketik Nama UNOR Tujuan --</option>
+                                                    @if($detail->unor_id_tujuan)
+                                                        <option value="{{ $detail->unor_id_tujuan }}" selected>{{ $detail->nama_unor_tujuan }}</option>
+                                                    @else
+                                                        <option value="">-- Ketik Nama UNOR Tujuan --</option>
+                                                    @endif
                                                 </select>
-                                                <input type="hidden" name="details[0][lokasi_tujuan]" id="lokasi_tujuan">
-                                                <input type="hidden" name="details[0][unor_id_tujuan]" id="unor_id_tujuan">
-                                                <input type="hidden" name="details[0][nama_unor_tujuan]" id="nama_unor_tujuan">
+                                                <input type="hidden" name="details[0][lokasi_tujuan]" id="lokasi_tujuan" value="{{ $detail->lokasi_tujuan }}">
+                                                <input type="hidden" name="details[0][unor_id_tujuan]" id="unor_id_tujuan" value="{{ $detail->unor_id_tujuan }}">
+                                                <input type="hidden" name="details[0][nama_unor_tujuan]" id="nama_unor_tujuan" value="{{ $detail->nama_unor_tujuan }}">
                                             </div>
                                         </div>
                                     </div>
@@ -144,11 +160,19 @@
                                             </thead>
                                             <tbody>
                                                 @forelse($dokumenSyarat as $dokumen)
+                                                @php
+                                                    $existingBerkas = $detail->berkas->where('id_dokumen', $dokumen->id_dokumen)->first();
+                                                @endphp
                                                 <tr>
-                                                    <td>{{ $dokumen->nama_dokumen }} <span class="text-danger">*</span></td>
+                                                    <td>
+                                                        {{ $dokumen->nama_dokumen }} <span class="text-danger">*</span>
+                                                        @if($existingBerkas)
+                                                            <div class="mt-1"><a href="{{ Storage::url($existingBerkas->path_dokumen) }}" target="_blank" class="badge bg-success">File Tersimpan</a></div>
+                                                        @endif
+                                                    </td>
                                                     <td>
                                                         <input class="form-control form-control-sm doc-upload" type="file" data-id="{{ $dokumen->id_dokumen }}" accept="application/pdf">
-                                                        <input type="hidden" name="file_dokumen_temp_{{ $dokumen->id_dokumen }}" id="hidden_dokumen_{{ $dokumen->id_dokumen }}" required>
+                                                        <input type="hidden" name="file_dokumen_temp_{{ $dokumen->id_dokumen }}" id="hidden_dokumen_{{ $dokumen->id_dokumen }}" {{ $existingBerkas ? '' : 'required' }}>
                                                         <small class="upload-status text-primary mt-1 d-block" id="status_dokumen_{{ $dokumen->id_dokumen }}"></small>
                                                     </td>
                                                 </tr>
@@ -338,6 +362,7 @@
                                 document.getElementById('tempat_lahir').value = pns.tempatLahir || '';
                                 document.getElementById('tanggal_lahir').value = pns.tglLahir || '';
                                 document.getElementById('pangkat_akhir').value = pns.pangkatAkhir || '';
+                                document.getElementById('gol_ruang_akhir').value = pns.golRuangAkhir || '';
                                 document.getElementById('tmt_gol_akhir').value = pns.tmtGolAkhir || '';
                                 document.getElementById('pendidikan_terakhir_nama').value = pns.pendidikanTerakhirNama || '';
                                 document.getElementById('jabatan_nama').value = pns.jabatanNama || pns.namaJabatan || '';
@@ -462,11 +487,8 @@
                     const form = document.getElementById('formUsulan');
                     const isPreviewAction = this.getAttribute('data-action') === 'preview';
                     
-                    // Ubah action form ke mode storeDraft
-                    // Saat divalidasi nanti storeDraft akan ngeredirect ke edit (atau preview)
-                    // Agar rapih, storeDraft saat ini meredirect ke edit. Anda bisa menyesuaikan flow
-                    // redirect di Controller jika request is_preview
-                    form.action = "{{ route('pns.usulan.storeDraft') }}";
+                    // Ubah action form ke mode updateDraft
+                    form.action = "{{ route('pns.usulan.updateDraft', $usulan->id_usulan) }}";
                     
                     if (isPreviewAction) {
                         // Insert temporary input hidden to flag it for redirecting to preview

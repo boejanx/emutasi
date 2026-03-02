@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Usulan;
 use Illuminate\Support\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanExport;
+
 
 class LaporanController extends Controller
 {
@@ -37,8 +40,8 @@ class LaporanController extends Controller
         $usulans = $query->with(['user', 'details.berkas.dokumen'])->latest()->get();
         if ($request->input('export') === 'excel') {
             $filename = "Laporan_Usulan_Mutasi_{$bulan}_{$tahun}.xlsx";
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new \App\Exports\LaporanExport($rekap, $usulans, $bulan, $tahun), 
+            return Excel::download(
+                new LaporanExport($rekap, $usulans, $bulan, $tahun), 
                 $filename
             );
         }

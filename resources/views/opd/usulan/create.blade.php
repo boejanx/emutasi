@@ -87,6 +87,16 @@
                                             </h2>
                                             <div id="collapsePns0" class="accordion-collapse collapse show" aria-labelledby="headingPns0" data-bs-parent="#pns-list-container">
                                                 <div class="accordion-body bg-white">
+                                                    <input type="hidden" name="details[0][siasn_id]">
+                                                    <input type="hidden" name="details[0][siasn_nip_baru]">
+                                                    <input type="hidden" name="details[0][unor_induk_nama]">
+                                                    <input type="hidden" name="details[0][tempat_lahir]">
+                                                    <input type="hidden" name="details[0][tanggal_lahir]">
+                                                    <input type="hidden" name="details[0][pangkat_akhir]">
+                                                    <input type="hidden" name="details[0][tmt_gol_akhir]">
+                                                    <input type="hidden" name="details[0][pendidikan_terakhir_nama]">
+                                                    <input type="hidden" name="details[0][jabatan_nama]">
+                                                    <input type="hidden" name="details[0][unor_nama]">
                                                     <div class="row g-4">
                                                         <div class="col-md-4">
                                                             <label class="form-label mb-1 fw-bold">NIP <span class="text-danger">*</span></label>
@@ -162,6 +172,16 @@
             </h2>
             <div id="collapsePnsINDEX" class="accordion-collapse collapse show" aria-labelledby="headingPnsINDEX" data-bs-parent="#pns-list-container">
                 <div class="accordion-body bg-white position-relative">
+                    <input type="hidden" name="details[INDEX][siasn_id]">
+                    <input type="hidden" name="details[INDEX][siasn_nip_baru]">
+                    <input type="hidden" name="details[INDEX][unor_induk_nama]">
+                    <input type="hidden" name="details[INDEX][tempat_lahir]">
+                    <input type="hidden" name="details[INDEX][tanggal_lahir]">
+                    <input type="hidden" name="details[INDEX][pangkat_akhir]">
+                    <input type="hidden" name="details[INDEX][tmt_gol_akhir]">
+                    <input type="hidden" name="details[INDEX][pendidikan_terakhir_nama]">
+                    <input type="hidden" name="details[INDEX][jabatan_nama]">
+                    <input type="hidden" name="details[INDEX][unor_nama]">
                     <button type="button" class="btn btn-danger btn-sm shadow-sm btn-remove-pns position-absolute" style="top: 15px; right: 15px; z-index: 10;"><i class="fa fa-trash-alt me-1"></i> Hapus</button>
                     <div class="row g-4 mt-1">
                         <div class="col-md-4">
@@ -451,6 +471,21 @@
                                 entry.querySelector(`input[name="details[${index}][nama]"]`).value = namaLengkap;
                                 entry.querySelector(`input[name="details[${index}][jabatan]"]`).value = pns.jabatanNama || pns.namaJabatan || '-';
                                 entry.querySelector(`input[name="details[${index}][lokasi_awal]"]`).value = pns.unorIndukNama || pns.lokasiKerja || '-';
+                                
+                                const setHidden = (name, val) => {
+                                    const el = entry.querySelector(`input[name="details[${index}][${name}]"]`);
+                                    if(el) el.value = val;
+                                };
+                                setHidden('siasn_id', pns.id || '');
+                                setHidden('siasn_nip_baru', pns.nipBaru || '');
+                                setHidden('unor_induk_nama', pns.unorIndukNama || '');
+                                setHidden('tempat_lahir', pns.tempatLahir || '');
+                                setHidden('tanggal_lahir', pns.tglLahir || '');
+                                setHidden('pangkat_akhir', pns.pangkatAkhir || '');
+                                setHidden('tmt_gol_akhir', pns.tmtGolAkhir || '');
+                                setHidden('pendidikan_terakhir_nama', pns.pendidikanTerakhirNama || '');
+                                setHidden('jabatan_nama', pns.jabatanNama || pns.namaJabatan || '');
+                                setHidden('unor_nama', pns.unorNama || '');
                                 
                                 Swal.fire('Berhasil!', `Data Pegawai ditemukan.`, 'success');
                                 saveDraft();

@@ -53,7 +53,11 @@
                             <table class="table table-sm table-borderless mb-0">
                                 <tr><th width="35%" class="text-muted">NIP</th><td class="fw-bold">: {{ $detail->nip }}</td></tr>
                                 <tr><th class="text-muted">Nama Lengkap</th><td class="fw-bold">: {{ $detail->nama }}</td></tr>
-                                <tr><th class="text-muted">Jabatan</th><td>: {{ $detail->jabatan }}</td></tr>
+                                <tr><th class="text-muted">Tempat, Tgl Lahir</th><td>: {{ $detail->tempat_lahir ?? '-' }}, {{ $detail->tanggal_lahir ?? '-' }}</td></tr>
+                                <tr><th class="text-muted">Pangkat / Gol. Ruang</th><td>: {{ $detail->pangkat_akhir ?? '-' }} / {{ $detail->tmt_gol_akhir ?? '-' }}</td></tr>
+                                <tr><th class="text-muted">Pendidikan Terakhir</th><td>: {{ $detail->pendidikan_terakhir_nama ?? '-' }}</td></tr>
+                                <tr><th class="text-muted">Jabatan</th><td>: {{ $detail->jabatan_nama ?? $detail->jabatan }}</td></tr>
+                                <tr><th class="text-muted">Unit Kerja Induk</th><td>: {{ $detail->unor_induk_nama ?? '-' }}</td></tr>
                                 <tr><th class="text-muted">Instansi Awal</th><td>: {{ $detail->lokasi_awal }}</td></tr>
                                 <tr><th class="text-muted">Instansi Tujuan</th><td>: {{ $detail->lokasi_tujuan }}</td></tr>
                                 <tr>

@@ -58,12 +58,23 @@
                                                 <span class="badge bg-light text-dark">Menunggu</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="d-flex align-items-center gap-2">
                                             <button type="button" class="btn btn-sm btn-info rounded-pill px-3 shadow-sm text-white btn-disposisi" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#modalDisposisi-{{ $usulan->id_usulan }}">
                                                 <i class="fa fa-eye"></i> Lihat Riwayat
                                             </button>
+                                            
+                                            @if($usulan->status == 5 && $usulan->siasnUnorJabatan && !$usulan->siasnUnorJabatan->is_sync)
+                                                <form action="{{ route('admin.siasn.sync', $usulan->id_usulan) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data ini ke SIASN BKN? \n\nAksi ini akan mengirimkan data jabatan PNS bersangkutan serta melampirkan Dokumen SK Final Anda!');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm text-white">
+                                                        <i class="fa fa-sync"></i> Sync SIASN
+                                                    </button>
+                                                </form>
+                                            @elseif($usulan->status == 5 && $usulan->siasnUnorJabatan && $usulan->siasnUnorJabatan->is_sync)
+                                                <span class="badge bg-success align-self-center"><i class="fa fa-check-circle me-1"></i> Tersinkron SIASN</span>
+                                            @endif
                                         </td>
                                     </tr>
                                     @empty

@@ -221,23 +221,35 @@
                         </div>
 
                         @if($my_usulan)
-                            <div class="alert {{ in_array($my_usulan->status, [98, 99]) ? 'alert-danger' : ($my_usulan->status == 5 ? 'alert-success' : 'alert-info') }} border-0 shadow-sm p-4 d-block w-100">
+                            @php
+                                $isDraft = $my_usulan->status == 0;
+                                $isError = in_array($my_usulan->status, [98, 99]);
+                                $isSelesai = $my_usulan->status == 5;
+                                $alertClass = $isDraft ? 'alert-secondary' : ($isError ? 'alert-danger' : ($isSelesai ? 'alert-success' : 'alert-info'));
+                                $iconBg = $isDraft ? 'bg-secondary text-white' : ($isError ? 'bg-danger text-white' : ($isSelesai ? 'bg-success text-white' : 'bg-primary text-white'));
+                                $iconClass = $isDraft ? 'fa-file-alt' : ($isError ? 'fa-exclamation-triangle' : ($isSelesai ? 'fa-check-double' : 'fa-spinner fa-spin'));
+                                $badgeTextClass = $isDraft ? 'text-secondary border-secondary' : ($isError ? 'text-danger border-danger' : ($isSelesai ? 'text-success border-success' : 'text-primary border-primary'));
+                                $statusLabel = $isDraft ? 'Draft (Belum Dikirim)' : ($my_usulan->status == 5 ? 'Selesai / SK Terbit' : ($my_usulan->status == 4 ? 'Menunggu SK' : ($my_usulan->status == 98 ? 'Ditolak Permanen' : ($my_usulan->status == 99 ? 'Perlu Revisi' : 'Sedang Diproses'))));
+                            @endphp
+                            <div class="alert {{ $alertClass }} border-0 shadow-sm p-4 d-block w-100">
                                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center mb-3 mb-md-0">
-                                        <div class="stat {{ in_array($my_usulan->status, [98, 99]) ? 'bg-danger text-white' : ($my_usulan->status == 5 ? 'bg-success text-white' : 'bg-primary text-white') }} me-3 flex-shrink-0 shadow-sm" style="width: 50px; height: 50px;">
-                                            <i class="fa {{ in_array($my_usulan->status, [98, 99]) ? 'fa-exclamation-triangle' : ($my_usulan->status == 5 ? 'fa-check-double' : 'fa-spinner fa-spin') }} fa-lg"></i>
+                                        <div class="stat {{ $iconBg }} me-3 flex-shrink-0 shadow-sm" style="width: 50px; height: 50px;">
+                                            <i class="fa {{ $iconClass }} fa-lg"></i>
                                         </div>
                                         <div>
                                             <h5 class="mb-1 fw-bold text-dark">Status Usulan Terakhir</h5>
-                                            <small class="text-dark opacity-75 fw-medium"><i class="fa fa-file-alt me-1"></i> {{ $my_usulan->no_surat }}</small>
+                                            <small class="text-dark opacity-75 fw-medium"><i class="fa fa-file-alt me-1"></i> {{ $my_usulan->no_surat ?? 'Draft (nomor belum diisi)' }}</small>
                                         </div>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-white shadow-sm border {{ in_array($my_usulan->status, [98, 99]) ? 'text-danger border-danger' : ($my_usulan->status == 5 ? 'text-success border-success' : 'text-primary border-primary') }} px-3 py-2" style="font-size: 0.85rem;">
-                                            {{ $my_usulan->status == 5 ? 'Selesai / SK Terbit' : ($my_usulan->status == 4 ? 'Menunggu SK' : ($my_usulan->status == 98 ? 'Ditolak Permanen' : ($my_usulan->status == 99 ? 'Perlu Revisi' : 'Sedang Diproses'))) }}
+                                        <span class="badge bg-white shadow-sm border {{ $badgeTextClass }} px-3 py-2" style="font-size: 0.85rem;">
+                                            @if($isDraft)<i class="fa fa-edit me-1"></i>@endif
+                                            {{ $statusLabel }}
                                         </span>
                                     </div>
                                 </div>
+                                @if(!$isDraft)
                                 <div class="progress mb-2 rounded-pill shadow-sm" style="height: 12px; background-color: rgba(0,0,0,0.05);">
                                     @php
                                         $progress = 0;
@@ -247,15 +259,24 @@
                                         elseif($my_usulan->status == 3) $progress = 50;
                                         elseif(in_array($my_usulan->status, [98, 99])) $progress = 40;
                                     @endphp
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ in_array($my_usulan->status, [98, 99]) ? 'bg-danger' : 'bg-success' }}" style="width:{{ $progress }}%"></div>
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ $isError ? 'bg-danger' : 'bg-success' }}" style="width:{{ $progress }}%"></div>
                                 </div>
                                 <div class="d-flex justify-content-between small fw-bold px-1" style="color: rgba(0,0,0,0.5);">
                                     <span>Diajukan</span>
                                     <span>Verifikasi Staf</span>
                                     <span>SK Terbit</span>
                                 </div>
+                                @else
+                                <div class="bg-white bg-opacity-50 rounded p-3 mb-2">
+                                    <p class="mb-0 text-secondary small"><i class="fa fa-info-circle me-1"></i> Draft ini belum dikirim ke BKPSDM. Lengkapi data dan dokumen, lalu kirim untuk memulai proses verifikasi.</p>
+                                </div>
+                                @endif
                                 <div class="mt-4 pt-3 text-end" style="border-top: 1px dashed rgba(0,0,0,0.1);">
-                                    <a href="{{ route('pns.tracking.detail', $my_usulan->id_usulan) }}" class="btn {{ in_array($my_usulan->status, [98, 99]) ? 'btn-danger' : 'btn-primary' }} fw-bold px-4 shadow-sm">Lihat Detail Tracking <i class="fa fa-arrow-right ms-2"></i></a>
+                                    @if($isDraft)
+                                        <a href="{{ route('pns.usulan.edit', $my_usulan->id_usulan) }}" class="btn btn-secondary fw-bold px-4 shadow-sm"><i class="fa fa-pencil-alt me-2"></i>Lanjutkan Pengisian <i class="fa fa-arrow-right ms-2"></i></a>
+                                    @else
+                                        <a href="{{ route('pns.tracking.detail', $my_usulan->id_usulan) }}" class="btn {{ $isError ? 'btn-danger' : 'btn-primary' }} fw-bold px-4 shadow-sm">Lihat Detail Tracking <i class="fa fa-arrow-right ms-2"></i></a>
+                                    @endif
                                 </div>
                             </div>
                         @else

@@ -10,21 +10,24 @@ class PnsController extends Controller
 {
     public function index()
     {
-        // Cari usulan yang sedang aktif (masih dalam proses verifikasi/progres)
-        // Status: 0=Draft, 1=Diajukan, 2=Disposisi, 3=Diproses
-        // Status 4 (Selesai), 5 (SK Terbit) dan 98 (Ditolak) dianggap sudah memiliki keputusan final/tindakan lanjut.
-        // Status 99 (Revisi Berkas) dianggap masih aktif karena harus diperbaiki.
-        
+        // Draft: status 0 (belum dikirim, hanya milik user sendiri)
+        $activeDraft = Usulan::where('id_user', auth()->id())
+            ->where('status', 0)
+            ->latest()
+            ->first();
+
+        // Usulan aktif yang sudah dikirim (in-progress/revisi, bukan draft)
         $activeUsulan = Usulan::where('id_user', auth()->id())
-            ->whereNotIn('status', [4, 5, 98])
+            ->whereNotIn('status', [0, 4, 5, 98]) // 0=Draft, 4=Selesai, 5=SK, 98=Tolak
             ->first();
             
         $lastUsulan = Usulan::where('id_user', auth()->id())->latest()->first();
         
+        $hasActiveDraft  = $activeDraft  ? true : false;
         $hasActiveUsulan = $activeUsulan ? true : false;
-        $dokumenSyarat = RefDokumen::where('status', 1)->get();
+        $dokumenSyarat   = RefDokumen::where('status', 1)->get();
         
-        return view('pns.index', compact('hasActiveUsulan', 'lastUsulan', 'dokumenSyarat'));
+        return view('pns.index', compact('hasActiveDraft', 'activeDraft', 'hasActiveUsulan', 'lastUsulan', 'dokumenSyarat', 'activeUsulan'));
     }
 
     public function tracking()
