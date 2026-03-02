@@ -293,24 +293,18 @@
                                 <i class="align-middle" data-feather="settings"></i>
                             </a>
 
-                            <a class="nav-link dropdown-toggle d-none d-sm-inline-block" data-bs-toggle="dropdown" href="#">
-                                <img alt="{{ Auth::user()->name }}" class="avatar img-fluid rounded me-1" src="{{ asset('assets/img/avatars/avatar.jpg') }}" /> <span
-                                    class="text-dark">{{ Auth::user()->name }}</span>
+                            <a class="nav-link dropdown-toggle d-none d-sm-inline-flex align-items-center" data-bs-toggle="dropdown" href="#">
+                                <i class="fa fa-user-circle fa-2x text-secondary align-middle me-2"></i>
+                                <span class="text-dark">{{ Auth::user()->name }}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="route('profile.edit')"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
-                                <a class="dropdown-item" href="#"><i class="align-middle me-1" data-feather="pie-chart"></i> Analytics</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="index.html"><i class="align-middle me-1" data-feather="settings"></i> Settings & Privacy</a>
-                                <a class="dropdown-item" href="#"><i class="align-middle me-1" data-feather="help-circle"></i> Help Center</a>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="align-middle me-1" data-feather="user"></i> Profil Akun</a>
                                 <div class="dropdown-divider"></div>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
-
-                                    <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                        {{ __('Log Out') }}
-                                    </x-dropdown-link>
+                                    <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); this.closest('form').submit();">
+                                        <i class="align-middle me-1" data-feather="log-out"></i> Log Out
+                                    </a>
                                 </form>
                             </div>
                         </li>

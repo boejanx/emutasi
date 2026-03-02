@@ -93,12 +93,24 @@
                                                 </td>
                                                 <td>
                                                     @if($berkas)
-                                                        <a href="{{ Storage::url($berkas->path_dokumen) }}" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-eye me-1"></i> Tinjau File</a>
+                                                        <button type="button" class="btn btn-sm btn-primary btn-view-pdf" data-url="{{ Storage::url($berkas->path_dokumen) }}" data-target="pdf-viewer-{{ $dokumen->id_dokumen }}">
+                                                            <i class="fa fa-eye me-1"></i> Tinjau File
+                                                        </button>
                                                     @else
                                                         -
                                                     @endif
                                                 </td>
                                             </tr>
+                                            @if($berkas)
+                                            <tr id="pdf-viewer-{{ $dokumen->id_dokumen }}" class="d-none">
+                                                    <td colspan="3" class="p-0">
+                                                        <div class="bg-dark p-2 text-end">
+                                                            <button type="button" class="btn btn-sm btn-danger btn-close-pdf" data-target="pdf-viewer-{{ $dokumen->id_dokumen }}">X Tutup Preview</button>
+                                                        </div>
+                                                        <iframe id="iframe-{{ $dokumen->id_dokumen }}" src="" width="100%" height="500px" style="border: none;"></iframe>
+                                                    </td>
+                                            </tr>
+                                            @endif
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -146,6 +158,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Preview PDF inline
+            const viewPdfBtns = document.querySelectorAll('.btn-view-pdf');
+            viewPdfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const url = this.getAttribute('data-url');
+                    const trViewer = document.getElementById(targetId);
+                    const iframe = trViewer.querySelector('iframe');
+                    
+                    if (trViewer.classList.contains('d-none')) {
+                        iframe.src = url;
+                        trViewer.classList.remove('d-none');
+                    } else {
+                        trViewer.classList.add('d-none');
+                        iframe.src = '';
+                    }
+                });
+            });
+
+            const closePdfBtns = document.querySelectorAll('.btn-close-pdf');
+            closePdfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const trViewer = document.getElementById(targetId);
+                    const iframe = trViewer.querySelector('iframe');
+                    
+                    trViewer.classList.add('d-none');
+                    iframe.src = '';
+                });
+            });
+
             // Handle Form Submit with Loading
             const formRealSubmit = document.getElementById('formRealSubmit');
             if (formRealSubmit) {

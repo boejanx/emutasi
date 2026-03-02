@@ -167,7 +167,12 @@
                                                     <td>
                                                         {{ $dokumen->nama_dokumen }} <span class="text-danger">*</span>
                                                         @if($existingBerkas)
-                                                            <div class="mt-1"><a href="{{ Storage::url($existingBerkas->path_dokumen) }}" target="_blank" class="badge bg-success">File Tersimpan</a></div>
+                                                            <div class="mt-1">
+                                                                <button type="button" class="btn btn-sm btn-info btn-view-pdf" data-url="{{ Storage::url($existingBerkas->path_dokumen) }}" data-target="pdf-viewer-{{ $dokumen->id_dokumen }}">
+                                                                    <i class="fa fa-eye"></i> Lihat File
+                                                                </button>
+                                                                <span class="badge bg-success ms-2">File Tersimpan</span>
+                                                            </div>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -176,6 +181,16 @@
                                                         <small class="upload-status text-primary mt-1 d-block" id="status_dokumen_{{ $dokumen->id_dokumen }}"></small>
                                                     </td>
                                                 </tr>
+                                                @if($existingBerkas)
+                                                <tr id="pdf-viewer-{{ $dokumen->id_dokumen }}" class="d-none">
+                                                    <td colspan="2" class="p-0">
+                                                        <div class="bg-dark p-2 text-end">
+                                                            <button type="button" class="btn btn-sm btn-danger btn-close-pdf" data-target="pdf-viewer-{{ $dokumen->id_dokumen }}">X Tutup Preview</button>
+                                                        </div>
+                                                        <iframe id="iframe-{{ $dokumen->id_dokumen }}" src="" width="100%" height="500px" style="border: none;"></iframe>
+                                                    </td>
+                                                </tr>
+                                                @endif
                                                 @empty
                                                 <tr>
                                                     <td colspan="2" class="text-center text-danger">Data master dokumen persyaratan belum dikonfigurasi.</td>
@@ -279,6 +294,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Preview PDF inline
+            const viewPdfBtns = document.querySelectorAll('.btn-view-pdf');
+            viewPdfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const url = this.getAttribute('data-url');
+                    const trViewer = document.getElementById(targetId);
+                    const iframe = trViewer.querySelector('iframe');
+                    
+                    if (trViewer.classList.contains('d-none')) {
+                        iframe.src = url;
+                        trViewer.classList.remove('d-none');
+                    } else {
+                        trViewer.classList.add('d-none');
+                        iframe.src = '';
+                    }
+                });
+            });
+
+            const closePdfBtns = document.querySelectorAll('.btn-close-pdf');
+            closePdfBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const trViewer = document.getElementById(targetId);
+                    const iframe = trViewer.querySelector('iframe');
+                    
+                    trViewer.classList.add('d-none');
+                    iframe.src = '';
+                });
+            });
+
             // Initialize Flatpickr for Date Inputs
             flatpickr("#tanggal_surat", {
                 dateFormat: "Y-m-d",
